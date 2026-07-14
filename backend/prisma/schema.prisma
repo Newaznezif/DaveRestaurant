@@ -1,0 +1,1708 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  SUPER_ADMIN
+  RESTAURANT_OWNER
+  MANAGER
+  CASHIER
+  WAITER
+  KITCHEN_STAFF
+  DELIVERY_DRIVER
+  CUSTOMER
+}
+
+enum AccountStatus {
+  ACTIVE
+  LOCKED
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  STRIPE
+  PAYPAL
+  APPLE_PAY
+  GOOGLE_PAY
+  TELEBIRR
+  CHAPA
+  WALLET
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+  MAINTENANCE
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+  SCHEDULED
+  GROUP
+  QR_ORDER
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+enum ShiftStatus {
+  DRAFT
+  PUBLISHED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  ON_LEAVE
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  RESERVATION
+  PAYMENT
+  PROMOTION
+  ALERT
+  SYSTEM
+  DELIVERY
+  LOW_STOCK
+  SHIFT_REMINDER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
+  FREE_DELIVERY
+}
+
+enum CouponType {
+  RESTAURANT_WIDE
+  CATEGORY
+  PRODUCT
+  FREE_SHIPPING
+  NEW_CUSTOMER
+  REFERRAL
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+  BLACKLISTED
+  PENDING
+}
+
+enum StockMovementType {
+  PURCHASE
+  SALE
+  TRANSFER_IN
+  TRANSFER_OUT
+  ADJUSTMENT
+  WASTE
+  EXPIRY
+  RETURN
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+enum DeliveryStatus {
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+// ==================== TENANT / RESTAURANT ====================
+
+model Organization {
+  id                String    @id @default(cuid())
+  name              String
+  slug              String    @unique
+  logo              String?
+  favicon           String?
+  primaryColor      String    @default("#10B981")
+  secondaryColor    String    @default("#3B82F6")
+  accentColor       String    @default("#F59E0B")
+  domain            String?   @unique
+  email             String?
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  country           String?
+  postalCode        String?
+  timezone          String    @default("UTC")
+  currency          String    @default("USD")
+  dateFormat        String    @default("MM/DD/YYYY")
+  businessType      String    @default("restaurant")
+  taxRate           Float     @default(0.0)
+  taxId             String?
+  isActive          Boolean   @default(true)
+  isVerified        Boolean   @default(false)
+  subscriptionId    String?
+  features          Json?     @default("{}")
+  settings          Json?     @default("{}")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  subscription      Subscription?  @relation("OrgSubscription")
+  branches          Branch[]
+  users             User[]
+  categories        MenuCategory[]
+  products          Product[]
+  orders            Order[]
+  tables            RestaurantTable[]
+  reservations      Reservation[]
+  suppliers         Supplier[]
+  inventory         InventoryItem[]
+  purchaseOrders    PurchaseOrder[]
+  employees         Employee[]
+  shifts            Shift[]
+  departments       Department[]
+  coupons           Coupon[]
+  loyaltyPrograms   LoyaltyProgram[]
+  customerSegments  CustomerSegment[]
+  campaigns         Campaign[]
+  notifications     Notification[]
+  paymentGateways   PaymentGateway[]
+  auditLogs         AuditLog[]
+  customers         Customer[]
+  driverProfiles    DriverProfile[]
+}
+
+model Branch {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  slug            String
+  code            String   @unique
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+  latitude        Float?
+  longitude       Float?
+  timezone        String   @default("UTC")
+  openingTime     String   @default("08:00")
+  closingTime     String   @default("22:00")
+  isActive        Boolean  @default(true)
+  isHeadOffice    Boolean  @default(false)
+  image           String?
+  settings        Json?    @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users           User[]
+  categories      MenuCategory[]
+  products        Product[]
+  orders          Order[]
+  tables          RestaurantTable[]
+  reservations    Reservation[]
+  inventory       InventoryItem[]
+  purchaseOrders  PurchaseOrder[]
+  employees       Employee[]
+  shifts          Shift[]
+  departments     Department[]
+  floorPlans        FloorPlan[]
+  stockTransfersFrom StockTransfer[] @relation("StockTransferFrom")
+  stockTransfersTo   StockTransfer[] @relation("StockTransferTo")
+}
+
+// ==================== AUTH & USERS ====================
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  phone             String?
+  passwordHash      String
+  firstName         String?
+  lastName          String?
+  displayName       String?
+  avatar            String?
+  role              UserRole       @default(CUSTOMER)
+  organizationId    String?
+  branchId          String?
+  isActive          Boolean        @default(true)
+  isVerified        Boolean        @default(false)
+  isTwoFactorEnabled Boolean       @default(false)
+  twoFactorSecret   String?
+  lastLoginAt       DateTime?
+  failedLoginAttempts Int          @default(0)
+  lockedUntil       DateTime?
+  metadata          Json?          @default("{}")
+  settings          Json?          @default("{}")
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relations
+  organization      Organization?  @relation(fields: [organizationId], references: [id])
+  branch            Branch?        @relation(fields: [branchId], references: [id])
+  sessions          Session[]
+  socialAccounts    SocialAccount[]
+  employee          Employee?      @relation("EmployeeUser")
+  customer          Customer?      @relation("CustomerUser")
+  driverProfile     DriverProfile?
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  devices           UserDevice[]
+  rolePermissions   RolePermission[]
+
+  @@index([email])
+  @@index([organizationId])
+  @@index([role])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  refreshToken String  @unique
+  deviceInfo  String?
+  ipAddress   String?
+  userAgent   String?
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime
+  lastUsedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([refreshToken])
+}
+
+model SocialAccount {
+  id          String   @id @default(cuid())
+  userId      String
+  provider    String   // google, facebook, github, apple
+  providerId  String
+  email       String?
+  name        String?
+  avatar      String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+// ==================== SECURITY & AUTH ====================
+
+model LoginAttempt {
+  id          String    @id @default(cuid())
+  email       String
+  ipAddress   String?
+  userAgent   String?
+  isSuccessful Boolean  @default(false)
+  failureReason String? // INVALID_PASSWORD, ACCOUNT_LOCKED, etc
+  attemptedAt  DateTime  @default(now())
+
+  @@index([email])
+  @@index([ipAddress])
+  @@index([attemptedAt])
+}
+
+model PasswordResetToken {
+  id          String    @id @default(cuid())
+  userId      String
+  token       String    @unique
+  email       String
+  expiresAt   DateTime
+  isUsed      Boolean   @default(false)
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id          String    @id @default(cuid())
+  userId      String
+  email       String
+  token       String    @unique
+  expiresAt   DateTime
+  isUsed      Boolean   @default(false)
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+  @@index([userId])
+}
+
+model TokenBlacklist {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  userId      String
+  reason      String?   // LOGOUT, PASSWORD_CHANGE, etc
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model UserDevice {
+  id              String    @id @default(cuid())
+  userId          String
+  deviceName      String?   // e.g., "iPhone 13", "Chrome on Windows"
+  deviceType      String?   // mobile, desktop, tablet
+  browser         String?
+  os              String?
+  ipAddress       String?
+  userAgent       String?
+  lastUsedAt      DateTime  @default(now())
+  isTrusted       Boolean   @default(false)
+  metadata        Json?     @default("{}")
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, userAgent])
+  @@index([userId])
+  @@index([lastUsedAt])
+}
+
+// ==================== RBAC ====================
+
+model Permission {
+  id          String    @id @default(cuid())
+  name        String    @unique // e.g., "orders.create", "menu.manage"
+  module      String    // e.g., "orders", "menu", "inventory"
+  action      String    // e.g., "create", "read", "update", "delete", "manage"
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  roles       RolePermission[]
+
+  @@index([module])
+  @@index([action])
+}
+
+model RolePermission {
+  id            String      @id @default(cuid())
+  role          UserRole
+  permissionId  String
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  // Relations
+  permission    Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?
+
+  @@unique([role, permissionId])
+  @@index([role])
+  @@index([permissionId])
+  @@index([userId])
+}
+
+// ==================== SUBSCRIPTIONS ====================
+
+model Subscription {
+  id              String             @id @default(cuid())
+  planId          String
+  organizationId  String             @unique
+  status          SubscriptionStatus @default(ACTIVE)
+  trialEndsAt     DateTime?
+  currentPeriodStart DateTime         @default(now())
+  currentPeriodEnd   DateTime
+  cancelledAt     DateTime?
+  paymentMethodId String?
+  autoRenew       Boolean            @default(true)
+  metadata        Json?              @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  plan            SubscriptionPlan   @relation(fields: [planId], references: [id])
+  organization    Organization       @relation("OrgSubscription", fields: [organizationId], references: [id], onDelete: Cascade)
+  invoices        SubscriptionInvoice[]
+}
+
+model SubscriptionPlan {
+  id              String         @id @default(cuid())
+  name            String
+  slug            String         @unique
+  description     String?
+  price           Float
+  currency        String         @default("USD")
+  interval        String         @default("monthly") // monthly, yearly, quarterly
+  features        Json           @default("{}")
+  limits          Json           @default("{}")
+  isActive        Boolean        @default(true)
+  sortOrder       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  subscriptions   Subscription[]
+}
+
+model SubscriptionInvoice {
+  id              String         @id @default(cuid())
+  subscriptionId  String
+  amount          Float
+  currency        String         @default("USD")
+  status          InvoiceStatus  @default(PAID)
+  stripeInvoiceId String?
+  paidAt          DateTime?
+  dueDate         DateTime
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  subscription    Subscription   @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+// ==================== MENU MANAGEMENT ====================
+
+model MenuCategory {
+  id              String        @id @default(cuid())
+  organizationId  String
+  branchId        String?
+  parentId        String?
+  name            String
+  slug            String
+  description     String?
+  image           String?
+  icon            String?
+  sortOrder       Int           @default(0)
+  isActive        Boolean       @default(true)
+  isFeatured      Boolean       @default(false)
+  availableStart  String?       // HH:mm format
+  availableEnd    String?       // HH:mm format
+  metadata        Json?         @default("{}")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch?       @relation(fields: [branchId], references: [id])
+  parent          MenuCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children        MenuCategory[] @relation("CategoryHierarchy")
+  products        Product[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([parentId])
+}
+
+model Product {
+  id              String       @id @default(cuid())
+  organizationId  String
+  branchId        String?
+  categoryId      String
+  name            String
+  slug            String
+  description     String?
+  shortDescription String?
+  price           Float        @default(0)
+  compareAtPrice  Float?
+  costPrice       Float?
+  sku             String?
+  barcode         String?
+  image           String?
+  images          Json?        @default("[]")
+  video           String?
+  isActive        Boolean      @default(true)
+  isFeatured      Boolean      @default(false)
+  isAvailable     Boolean      @default(true)
+  isCombo         Boolean      @default(false)
+  isPopular       Boolean      @default(false)
+  preparationTime Int?         // in minutes
+  calories        Int?
+  nutritionInfo   Json?        @default("{}")
+  ingredients     String?
+  allergens       String?
+  sortOrder       Int          @default(0)
+  taxRate         Float?
+  taxExempt       Boolean      @default(false)
+  metadata        Json?        @default("{}")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch?      @relation(fields: [branchId], references: [id])
+  category        MenuCategory @relation(fields: [categoryId], references: [id])
+  variants        ProductVariant[]
+  addonGroups     ProductAddonGroup[]
+  orderItems      OrderItem[]
+  comboItems      ComboItem[]  @relation("ComboProduct")
+  comboParent     ComboItem[]  @relation("ComboParent")
+  inventoryItems  ProductIngredient[]
+  wishlistItems   WishlistItem[]
+  cartItems       CartItem[]
+  reviews         Review[]
+  pricingRules    PricingRule[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([categoryId])
+  @@index([sku])
+  @@index([barcode])
+}
+
+model ProductVariant {
+  id              String        @id @default(cuid())
+  productId       String
+  name            String
+  sku             String?
+  price           Float
+  compareAtPrice  Float?
+  costPrice       Float?
+  barcode         String?
+  image           String?
+  sortOrder       Int           @default(0)
+  isActive        Boolean       @default(true)
+  stock           Int           @default(0)
+  metadata        Json?         @default("{}")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+
+  @@index([productId])
+  @@index([sku])
+}
+
+model ProductAddonGroup {
+  id              String        @id @default(cuid())
+  productId       String
+  name            String
+  description     String?
+  isRequired      Boolean       @default(false)
+  minSelection    Int           @default(0)
+  maxSelection    Int           @default(99)
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  items           ProductAddon[]
+
+  @@index([productId])
+}
+
+model ProductAddon {
+  id              String           @id @default(cuid())
+  groupId         String
+  name            String
+  price           Float            @default(0)
+  description     String?
+  isDefault       Boolean          @default(false)
+  sortOrder       Int              @default(0)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  group           ProductAddonGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  orderItemAddons OrderItemAddon[]
+
+  @@index([groupId])
+}
+
+model ComboItem {
+  id              String   @id @default(cuid())
+  comboProductId  String
+  productId       String
+  quantity        Int      @default(1)
+  priceOverride   Float?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  comboProduct    Product  @relation("ComboProduct", fields: [comboProductId], references: [id], onDelete: Cascade)
+  product         Product  @relation("ComboParent", fields: [productId], references: [id])
+
+  @@index([comboProductId])
+}
+
+// ==================== TABLE MANAGEMENT ====================
+
+model RestaurantTable {
+  id              String        @id @default(cuid())
+  organizationId  String
+  branchId        String
+  floorId         String?
+  tableNumber     String
+  capacity        Int           @default(4)
+  minCapacity     Int           @default(1)
+  status          TableStatus   @default(AVAILABLE)
+  shape           String        @default("rectangle") // rectangle, circle, square, oval
+  posX            Float         @default(0)
+  posY            Float         @default(0)
+  width           Float         @default(80)
+  height          Float         @default(80)
+  rotation        Float         @default(0)
+  isActive        Boolean       @default(true)
+  isSmoking       Boolean       @default(false)
+  isVIP           Boolean       @default(false)
+  qrCode          String?
+  qrCodeUrl       String?
+  notes           String?
+  metadata        Json?         @default("{}")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch        @relation(fields: [branchId], references: [id])
+  floor           FloorPlan?    @relation(fields: [floorId], references: [id])
+  orders          Order[]
+  reservations    Reservation[]
+
+  @@unique([branchId, tableNumber])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model FloorPlan {
+  id              String             @id @default(cuid())
+  branchId        String
+  name            String
+  description     String?
+  image           String?
+  width           Int                @default(1200)
+  height          Int                @default(800)
+  isActive        Boolean            @default(true)
+  sortOrder       Int                @default(0)
+  metadata        Json?              @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  branch          Branch             @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tables          RestaurantTable[]
+
+  @@index([branchId])
+}
+
+// ==================== RESERVATIONS ====================
+
+model Reservation {
+  id                String              @id @default(cuid())
+  organizationId    String
+  branchId          String
+  tableId           String?
+  customerId        String?
+  customerName      String
+  customerEmail     String?
+  customerPhone     String?
+  guests            Int                 @default(2)
+  date              DateTime
+  time              String              // HH:mm
+  duration          Int                 @default(120) // minutes
+  status            ReservationStatus   @default(PENDING)
+  specialRequests   String?
+  occasion          String?
+  source            String?             // website, app, phone, walkin, qr
+  assignedServer    String?
+  notes             String?
+  reminderSent      Boolean             @default(false)
+  metadata          Json?               @default("{}")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  organization      Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch            Branch              @relation(fields: [branchId], references: [id])
+  table             RestaurantTable?    @relation(fields: [tableId], references: [id])
+  customer          Customer?           @relation(fields: [customerId], references: [id])
+
+  @@index([organizationId])
+  @@index([date])
+  @@index([status])
+}
+
+// ==================== ORDERS ====================
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  organizationId  String
+  branchId        String
+  tableId         String?
+  customerId      String?
+  customerName    String?
+  customerEmail   String?
+  customerPhone   String?
+  orderType       OrderType     @default(DINE_IN)
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod?
+  subtotal        Float         @default(0)
+  taxAmount       Float         @default(0)
+  taxRate         Float         @default(0)
+  discountAmount  Float         @default(0)
+  deliveryFee     Float         @default(0)
+  serviceCharge   Float         @default(0)
+  tipAmount       Float         @default(0)
+  totalAmount     Float         @default(0)
+  paidAmount      Float         @default(0)
+  changeAmount    Float         @default(0)
+  couponId        String?
+  couponCode      String?
+  notes           String?
+  specialInstructions String?
+  isScheduled     Boolean       @default(false)
+  scheduledAt     DateTime?
+  confirmedAt     DateTime?
+  preparedAt      DateTime?
+  readyAt         DateTime?
+  servedAt        DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  cancellationReason String?
+  source          String?       // pos, web, app, qr, kiosk
+  posUserId       String?
+  metadata        Json?         @default("{}")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch        @relation(fields: [branchId], references: [id])
+  table           RestaurantTable? @relation(fields: [tableId], references: [id])
+  customer        Customer?     @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+  delivery        Delivery?
+  coupon          Coupon?       @relation(fields: [couponId], references: [id])
+
+  @@index([organizationId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([tableId])
+}
+
+model OrderItem {
+  id              String            @id @default(cuid())
+  orderId         String
+  productId       String
+  variantId       String?
+  name            String
+  price           Float             @default(0)
+  quantity        Int               @default(1)
+  subtotal        Float             @default(0)
+  notes           String?
+  status          String            @default("PENDING") // PENDING, COOKING, READY, SERVED
+  cookingTime     Int?              // minutes
+  startedAt       DateTime?
+  completedAt     DateTime?
+  metadata        Json?             @default("{}")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product           @relation(fields: [productId], references: [id])
+  variant         ProductVariant?   @relation(fields: [variantId], references: [id])
+  addons          OrderItemAddon[]
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model OrderItemAddon {
+  id              String         @id @default(cuid())
+  orderItemId     String
+  addonId         String
+  name            String
+  price           Float          @default(0)
+  quantity        Int            @default(1)
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  orderItem       OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  addon           ProductAddon   @relation(fields: [addonId], references: [id])
+
+  @@index([orderItemId])
+}
+
+// ==================== PAYMENTS ====================
+
+model Payment {
+  id              String         @id @default(cuid())
+  orderId         String
+  amount          Float
+  currency        String         @default("USD")
+  method          PaymentMethod
+  status          PaymentStatus  @default(PENDING)
+  transactionId   String?
+  gatewayResponse Json?
+  notes           String?
+  paidAt          DateTime?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([transactionId])
+}
+
+model PaymentGateway {
+  id              String         @id @default(cuid())
+  organizationId  String
+  provider        String         // stripe, paypal, telebirr, chapa
+  isActive        Boolean        @default(false)
+  isDefault       Boolean        @default(false)
+  config          Json           @default("{}")
+  credentials     Json?          // encrypted
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+}
+
+// ==================== DELIVERY ====================
+
+model Delivery {
+  id              String         @id @default(cuid())
+  orderId         String         @unique
+  driverId        String?
+  status          DeliveryStatus @default(ASSIGNED)
+  pickupAddress   String?
+  deliveryAddress String
+  deliveryLat     Float?
+  deliveryLng     Float?
+  driverLat       Float?
+  driverLng       Float?
+  distance        Float?
+  estimatedTime   Int?           // minutes
+  actualTime      Int?           // minutes
+  otpCode         String?
+  otpVerified     Boolean        @default(false)
+  proofOfDelivery String?        // image url
+  notes           String?
+  assignedAt      DateTime?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driver          DriverProfile? @relation(fields: [driverId], references: [id])
+  route           DeliveryRoute?
+
+  @@index([driverId])
+  @@index([status])
+}
+
+model DriverProfile {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  organizationId  String
+  vehicleType     String?        // car, bike, scooter
+  vehicleNumber   String?
+  licenseNumber   String?
+  isAvailable     Boolean        @default(true)
+  isOnline        Boolean        @default(false)
+  currentLat      Float?
+  currentLng      Float?
+  rating          Float          @default(5.0)
+  totalDeliveries Int            @default(0)
+  totalEarnings   Float          @default(0)
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries      Delivery[]
+  earnings        DriverEarning[]
+  routes          DeliveryRoute[]
+}
+
+model DeliveryRoute {
+  id              String         @id @default(cuid())
+  deliveryId      String         @unique
+  driverId        String
+  polyline        String?        // encoded polyline
+  distance        Float?
+  duration        Int?           // seconds
+  steps           Json?          @default("[]")
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  delivery        Delivery       @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  driver          DriverProfile  @relation(fields: [driverId], references: [id])
+}
+
+model DriverEarning {
+  id              String         @id @default(cuid())
+  driverId        String
+  deliveryId      String?
+  amount          Float
+  type            String         // delivery_fee, tip, bonus
+  status          String         @default("PENDING") // PENDING, PAID
+  paidAt          DateTime?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  driver          DriverProfile  @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+// ==================== CUSTOMERS / CRM ====================
+
+model Customer {
+  id              String         @id @default(cuid())
+  userId          String?        @unique
+  organizationId  String?
+  firstName       String?
+  lastName        String?
+  email           String?
+  phone           String?
+  avatar          String?
+  dateOfBirth     DateTime?
+  anniversary     DateTime?
+  gender          String?
+  notes           String?
+  totalOrders     Int            @default(0)
+  totalSpent      Float          @default(0)
+  loyaltyPoints   Int            @default(0)
+  loyaltyTier     LoyaltyTier    @default(BRONZE)
+  segmentId       String?
+  tags            Json?          @default("[]")
+  preferences     Json?          @default("{}")
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  user            User?          @relation("CustomerUser", fields: [userId], references: [id])
+  organization    Organization?  @relation(fields: [organizationId], references: [id])
+  addresses       CustomerAddress[]
+  orders          Order[]
+  reservations    Reservation[]
+  reviews         Review[]
+  wishlist        WishlistItem[]
+  cart            CartItem[]
+  loyalty         LoyaltyPoint[]
+  referrals       Referral[]    @relation("Referrer")
+  referredBy      Referral[]    @relation("Referred")
+  segment         CustomerSegment? @relation(fields: [segmentId], references: [id])
+  notifications   Notification[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([organizationId])
+}
+
+model CustomerAddress {
+  id              String         @id @default(cuid())
+  customerId      String
+  type            String         @default("HOME") // HOME, WORK, OTHER
+  label           String?
+  address         String
+  city            String
+  state           String?
+  country         String
+  postalCode      String?
+  latitude        Float?
+  longitude       Float?
+  isDefault       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model CustomerSegment {
+  id              String         @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  criteria        Json           @default("{}")
+  isActive        Boolean        @default(true)
+  customerCount   Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customers       Customer[]
+}
+
+model WishlistItem {
+  id              String         @id @default(cuid())
+  customerId      String
+  productId       String
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+}
+
+model CartItem {
+  id              String         @id @default(cuid())
+  customerId      String
+  productId       String
+  variantId       String?
+  quantity        Int            @default(1)
+  notes           String?
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product         Product        @relation(fields: [productId], references: [id])
+
+  @@index([customerId])
+}
+
+model Review {
+  id              String         @id @default(cuid())
+  customerId      String
+  productId       String
+  orderId         String?
+  rating          Int            // 1-5
+  title           String?
+  comment         String?
+  images          Json?          @default("[]")
+  isVerified      Boolean        @default(false)
+  isFeatured      Boolean        @default(false)
+  helpfulCount    Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId])
+  @@index([rating])
+}
+
+model Referral {
+  id              String         @id @default(cuid())
+  referrerId      String
+  referredId      String?
+  code            String         @unique
+  status          String         @default("PENDING") // PENDING, CONVERTED, EXPIRED, CANCELLED
+  discountAmount  Float          @default(0)
+  referrerReward  Float          @default(0)
+  referredReward  Float          @default(0)
+  expiresAt       DateTime?
+  convertedAt     DateTime?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  referrer        Customer       @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred        Customer?      @relation("Referred", fields: [referredId], references: [id])
+}
+
+// ==================== LOYALTY & COUPONS ====================
+
+model LoyaltyProgram {
+  id              String         @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  pointsPerAmount Float          @default(1) // points per currency unit
+  pointsValue     Float          @default(0.01) // value of each point
+  tiers           Json?          @default("{}")
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  points          LoyaltyPoint[]
+}
+
+model LoyaltyPoint {
+  id              String         @id @default(cuid())
+  customerId      String
+  programId       String
+  points          Int
+  type            String         // EARNED, REDEEMED, EXPIRED, BONUS
+  reference       String?        // order id etc
+  description     String?
+  expiresAt       DateTime?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  program         LoyaltyProgram @relation(fields: [programId], references: [id])
+
+  @@index([customerId])
+}
+
+model Coupon {
+  id              String         @id @default(cuid())
+  organizationId  String
+  code            String
+  type            CouponType     @default(RESTAURANT_WIDE)
+  discountType    DiscountType   @default(PERCENTAGE)
+  discountValue   Float          @default(0)
+  minOrderAmount  Float?
+  maxDiscount     Float?
+  usageLimit      Int?           @default(100)
+  usageCount      Int            @default(0)
+  perUserLimit    Int            @default(1)
+  isActive        Boolean        @default(true)
+  startsAt        DateTime?
+  expiresAt       DateTime?
+  productIds      Json?          @default("[]")
+  categoryIds     Json?          @default("[]")
+  customerIds     Json?          @default("[]")
+  description     String?
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orders          Order[]
+
+  @@unique([organizationId, code])
+  @@index([code])
+}
+
+// ==================== INVENTORY ====================
+
+model InventoryItem {
+  id              String         @id @default(cuid())
+  organizationId  String
+  branchId        String
+  name            String
+  sku             String?
+  barcode         String?
+  category        String?        // raw, packaged, beverage, etc
+  unit            String         // kg, g, l, ml, pcs, box
+  quantity        Float          @default(0)
+  minQuantity     Float          @default(0)
+  maxQuantity     Float?
+  costPrice       Float          @default(0)
+  sellingPrice    Float?
+  expiryDate      DateTime?
+  image           String?
+  notes           String?
+  isActive        Boolean        @default(true)
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch         @relation(fields: [branchId], references: [id])
+  movements       StockMovement[]
+  products        ProductIngredient[]
+  purchaseOrderItems PurchaseOrderItem[]
+  stockTransferItems StockTransferItem[]
+}
+
+model StockMovement {
+  id              String             @id @default(cuid())
+  inventoryId     String
+  type            StockMovementType
+  quantity        Float
+  beforeQuantity  Float
+  afterQuantity   Float
+  reference       String?            // order, purchase order, transfer id
+  notes           String?
+  userId          String?
+  metadata        Json?              @default("{}")
+  createdAt       DateTime           @default(now())
+
+  // Relations
+  inventory       InventoryItem      @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model StockTransfer {
+  id              String         @id @default(cuid())
+  fromBranchId    String
+  toBranchId      String
+  status          String         @default("PENDING") // PENDING, APPROVED, SHIPPED, RECEIVED, CANCELLED
+  notes           String?
+  approvedById    String?
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  fromBranch      Branch         @relation("StockTransferFrom", fields: [fromBranchId], references: [id])
+  toBranch        Branch         @relation("StockTransferTo", fields: [toBranchId], references: [id])
+  items           StockTransferItem[]
+}
+
+model StockTransferItem {
+  id              String         @id @default(cuid())
+  transferId      String
+  inventoryId     String
+  quantity        Float
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  transfer        StockTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  inventory       InventoryItem  @relation(fields: [inventoryId], references: [id])
+}
+
+model ProductIngredient {
+  id              String         @id @default(cuid())
+  productId       String
+  inventoryId     String
+  quantity        Float          @default(1)
+  unit            String         @default("g")
+  isOptional      Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory       InventoryItem  @relation(fields: [inventoryId], references: [id])
+
+  @@index([productId])
+  @@index([inventoryId])
+}
+
+// ==================== SUPPLIERS ====================
+
+model Supplier {
+  id              String           @id @default(cuid())
+  organizationId  String
+  name            String
+  contactName     String?
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+  taxId           String?
+  paymentTerms    String?
+  status          SupplierStatus   @default(ACTIVE)
+  notes           String?
+  rating          Float?
+  metadata        Json?            @default("{}")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  purchaseOrders  PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id              String          @id @default(cuid())
+  organizationId  String
+  branchId        String
+  supplierId      String
+  orderNumber     String          @unique
+  status          String          @default("DRAFT") // DRAFT, SENT, CONFIRMED, SHIPPED, RECEIVED, CANCELLED
+  subtotal        Float           @default(0)
+  taxAmount       Float           @default(0)
+  discountAmount  Float           @default(0)
+  totalAmount     Float           @default(0)
+  paidAmount      Float           @default(0)
+  notes           String?
+  expectedDate    DateTime?
+  receivedAt      DateTime?
+  invoiceUrl      String?
+  metadata        Json?           @default("{}")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch          @relation(fields: [branchId], references: [id])
+  supplier        Supplier        @relation(fields: [supplierId], references: [id])
+  items           PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String          @id @default(cuid())
+  purchaseOrderId String
+  inventoryId     String
+  quantity        Float
+  unitCost        Float
+  totalCost       Float
+  receivedQty     Float           @default(0)
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  purchaseOrder   PurchaseOrder   @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  inventory       InventoryItem   @relation(fields: [inventoryId], references: [id])
+}
+
+// ==================== EMPLOYEES ====================
+
+model Employee {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  organizationId  String
+  branchId        String?
+  departmentId    String?
+  employeeId      String          @unique
+  position        String?
+  salary          Float?
+  hourlyRate      Float?
+  payType         String          @default("SALARY") // SALARY, HOURLY, COMMISSION
+  employmentType  String          @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, INTERN
+  hireDate        DateTime?
+  terminationDate DateTime?
+  isActive        Boolean         @default(true)
+  emergencyContact Json?          @default("{}")
+  documents       Json?           @default("[]")
+  notes           String?
+  metadata        Json?           @default("{}")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  user            User            @relation("EmployeeUser", fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch?         @relation(fields: [branchId], references: [id])
+  department      Department?     @relation(fields: [departmentId], references: [id])
+  attendance      Attendance[]
+  leaves          Leave[]
+  shifts          ShiftAssignment[]
+  payrolls        Payroll[]
+}
+
+model Department {
+  id              String          @id @default(cuid())
+  organizationId  String
+  branchId        String?
+  name            String
+  description     String?
+  managerId       String?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch?         @relation(fields: [branchId], references: [id])
+  employees       Employee[]
+  shifts          Shift[]
+}
+
+model Attendance {
+  id              String           @id @default(cuid())
+  employeeId      String
+  date            DateTime
+  clockIn         DateTime?
+  clockOut        DateTime?
+  status          AttendanceStatus @default(PRESENT)
+  hoursWorked     Float?
+  overtimeHours   Float?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  employee        Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+}
+
+model Leave {
+  id              String         @id @default(cuid())
+  employeeId      String
+  type            String         // ANNUAL, SICK, PERSONAL, MATERNITY, PATERNITY, OTHER
+  startDate       DateTime
+  endDate         DateTime
+  totalDays       Int
+  reason          String?
+  status          LeaveStatus    @default(PENDING)
+  approvedById    String?
+  approvedAt      DateTime?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  employee        Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Shift {
+  id              String         @id @default(cuid())
+  organizationId  String
+  branchId        String?
+  departmentId    String?
+  name            String
+  startTime       String         // HH:mm
+  endTime         String         // HH:mm
+  breakDuration   Int            @default(30) // minutes
+  recurring       Boolean        @default(false)
+  daysOfWeek      Json?          @default("[]") // [0,1,2,3,4,5,6]
+  status          ShiftStatus    @default(DRAFT)
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch          Branch?        @relation(fields: [branchId], references: [id])
+  department      Department?    @relation(fields: [departmentId], references: [id])
+  assignments     ShiftAssignment[]
+}
+
+model ShiftAssignment {
+  id              String         @id @default(cuid())
+  shiftId         String
+  employeeId      String
+  date            DateTime
+  startTime       String?
+  endTime         String?
+  status          String         @default("SCHEDULED") // SCHEDULED, CHECKED_IN, CHECKED_OUT, ABSENT, CANCELLED
+  notes           String?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  shift           Shift          @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  employee        Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([shiftId, employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+}
+
+model Payroll {
+  id              String         @id @default(cuid())
+  employeeId      String
+  periodStart     DateTime
+  periodEnd       DateTime
+  basePay         Float
+  overtimePay     Float          @default(0)
+  bonuses         Float          @default(0)
+  deductions      Float          @default(0)
+  taxAmount       Float          @default(0)
+  netPay          Float
+  status          String         @default("PENDING") // PENDING, PROCESSED, PAID
+  paidAt          DateTime?
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  employee        Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([periodStart, periodEnd])
+}
+
+// ==================== NOTIFICATIONS ====================
+
+model Notification {
+  id              String           @id @default(cuid())
+  organizationId  String
+  userId          String?
+  customerId      String?
+  type            NotificationType @default(SYSTEM)
+  title           String
+  message         String
+  data            Json?            @default("{}")
+  isRead          Boolean          @default(false)
+  readAt          DateTime?
+  channel         String           @default("in_app") // in_app, email, sms, push, whatsapp
+  status          String           @default("SENT") // SENT, DELIVERED, READ, FAILED
+  createdAt       DateTime         @default(now())
+
+  // Relations
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User?            @relation(fields: [userId], references: [id])
+  customer        Customer?        @relation(fields: [customerId], references: [id])
+
+  @@index([userId])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+// ==================== CAMPAIGNS & MARKETING ====================
+
+model Campaign {
+  id              String         @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  type            String         // EMAIL, SMS, PUSH, SOCIAL
+  status          String         @default("DRAFT") // DRAFT, SCHEDULED, ACTIVE, PAUSED, COMPLETED, CANCELLED
+  audience        Json?          @default("{}")
+  content         Json           @default("{}")
+  scheduleAt      DateTime?
+  sentAt          DateTime?
+  stats           Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model PricingRule {
+  id              String         @id @default(cuid())
+  productId       String?
+  categoryId      String?
+  type            String         // HAPPY_HOUR, BULK_DISCOUNT, COMBO, SEASONAL, TIME_BASED
+  name            String
+  description     String?
+  discountType    DiscountType   @default(PERCENTAGE)
+  discountValue   Float
+  conditions      Json           @default("{}")
+  isActive        Boolean        @default(true)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  priority        Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  product         Product?       @relation(fields: [productId], references: [id])
+}
+
+// ==================== AUDIT & SECURITY ====================
+
+model AuditLog {
+  id              String         @id @default(cuid())
+  organizationId  String
+  userId          String?
+  action          String         // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, etc
+  entity          String         // table name
+  entityId        String?
+  changes         Json?          @default("{}")
+  ipAddress       String?
+  userAgent       String?
+  metadata        Json?          @default("{}")
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User?          @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
