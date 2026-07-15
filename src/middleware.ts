@@ -71,18 +71,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get auth token from cookies
-  const accessToken = request.cookies.get("access_token")?.value;
+  // Note: This application uses JWT tokens stored in localStorage (client-side).
+  // The middleware cannot access localStorage, so authentication is handled client-side.
+  // Protected routes will be rendered client-side and redirect if not authenticated.
+  // This is a standard pattern for JWT-based authentication with localStorage.
 
-  // If no token, redirect to login
-  if (!accessToken) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // For now, we'll let the client-side handle role-based routing
-  // The middleware just checks for authentication
   return NextResponse.next();
 }
 

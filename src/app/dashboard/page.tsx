@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useDashboardStats, useOrders, useLowStock } from "@/hooks/use-queries";
 import { StatsCard } from "@/components/ui/chart";
 import { BarChart } from "@/components/ui/chart";
@@ -9,11 +11,21 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { DollarSign, ShoppingBag, Users, AlertTriangle, Clock, TrendingUp } from "lucide-react";
 import { useTenantStore } from "@/stores/tenant.store";
+import { useAuthStore } from "@/stores/auth.store";
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const { currentOrganization, currentBranch } = useTenantStore();
   const orgId = currentOrganization?.id || "";
   const branchId = currentBranch?.id || "";
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats(orgId, branchId);
   const { data: orders, isLoading: ordersLoading, isError: ordersError } = useOrders(branchId, { limit: 5 });

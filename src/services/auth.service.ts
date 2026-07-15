@@ -1,5 +1,5 @@
 import { apiClient } from "./api-client";
-import { LoginResponse, User, Session } from "@/types";
+import { LoginResponse, User, Session, ApiResponse } from "@/types";
 
 export interface LoginCredentials {
   email: string;
@@ -48,13 +48,13 @@ export interface ChangePasswordData {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>("/auth/login", credentials);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<LoginResponse>>("/auth/login", credentials);
+    return response.data.data;
   }
 
   async register(data: RegisterData): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>("/auth/register", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<LoginResponse>>("/auth/register", data);
+    return response.data.data;
   }
 
   async logout(refreshToken: string): Promise<void> {
@@ -66,43 +66,43 @@ class AuthService {
   }
 
   async forgotPassword(data: ForgotPasswordData): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>("/auth/forgot-password", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<{ message: string }>>("/auth/forgot-password", data);
+    return response.data.data;
   }
 
   async resetPassword(data: ResetPasswordData): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>("/auth/reset-password", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<{ message: string }>>("/auth/reset-password", data);
+    return response.data.data;
   }
 
   async verifyEmail(data: VerifyEmailData): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>("/auth/verify-email", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<{ message: string }>>("/auth/verify-email", data);
+    return response.data.data;
   }
 
   async resendVerification(email: string): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>("/auth/resend-verification", { email });
-    return response.data;
+    const response = await apiClient.post<ApiResponse<{ message: string }>>("/auth/resend-verification", { email });
+    return response.data.data;
   }
 
   async getProfile(): Promise<User> {
-    const response = await apiClient.get<User>("/auth/profile");
-    return response.data;
+    const response = await apiClient.get<ApiResponse<User>>("/auth/profile");
+    return response.data.data;
   }
 
   async updateProfile(data: UpdateProfileData): Promise<User> {
-    const response = await apiClient.put<User>("/auth/profile", data);
-    return response.data;
+    const response = await apiClient.put<ApiResponse<User>>("/auth/profile", data);
+    return response.data.data;
   }
 
   async changePassword(data: ChangePasswordData): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>("/auth/change-password", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<{ message: string }>>("/auth/change-password", data);
+    return response.data.data;
   }
 
   async getSessions(): Promise<Session[]> {
-    const response = await apiClient.get<Session[]>("/auth/sessions");
-    return response.data;
+    const response = await apiClient.get<ApiResponse<Session[]>>("/auth/sessions");
+    return response.data.data;
   }
 }
 

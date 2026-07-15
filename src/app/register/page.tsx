@@ -15,8 +15,9 @@ import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login, setLoading, isLoading, error, clearError } = useAuthStore();
+  const { login, setLoading, isLoading, error, clearError, setError } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -34,8 +35,14 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    // Prevent multiple simultaneous submissions
+    if (isSubmitting || isLoading) {
+      return;
+    }
+
     try {
       clearError();
+      setIsSubmitting(true);
       setLoading(true);
       const response = await authService.register(data);
       login(response.user, {
@@ -44,7 +51,10 @@ export default function RegisterPage() {
       });
       router.push("/verify-email?email=" + encodeURIComponent(data.email));
     } catch (error: any) {
+      const errorMessage = error?.message || "Registration failed. Please try again.";
+      setError(errorMessage);
       setLoading(false);
+      setIsSubmitting(false);
     }
   };
 

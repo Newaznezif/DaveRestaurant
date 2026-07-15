@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, setLoading, isLoading, error, clearError } = useAuthStore();
+  const { login, setLoading, isLoading, error, clearError, setError } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -42,6 +42,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (error: any) {
       setLoading(false);
+      setError(error.message || 'Login failed. Please check your credentials.');
     }
   };
 
@@ -54,7 +55,7 @@ export default function LoginPage() {
             Enter your credentials to access your restaurant dashboard
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} method="POST">
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">

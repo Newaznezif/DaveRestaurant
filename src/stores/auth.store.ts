@@ -40,6 +40,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           user,
           tokens,
           isAuthenticated: true,
+          isLoading: false,
           error: null,
         });
       },
@@ -81,8 +82,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     {
       name: "auth-storage",
       partialize: (state) => ({
-        // Only persist non-sensitive data
+        // Persist auth state and tokens
         user: state.user,
+        tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
     }
