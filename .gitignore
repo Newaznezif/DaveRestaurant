@@ -1,2 +1,12 @@
 node_modules
 package-lock.json
+
+# Environment files
+backend/.env
+
+# Build artifacts
+backend/dist/
+.next/
+
+# Backend dependencies
+backend/package-lock.json
