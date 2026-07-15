@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppLoggerModule = void 0;
 const common_1 = require("@nestjs/common");
 const logger_service_1 = require("./logger.service");
+const config_module_1 = require("../config/config.module");
 let AppLoggerModule = class AppLoggerModule {
 };
 exports.AppLoggerModule = AppLoggerModule;
 exports.AppLoggerModule = AppLoggerModule = __decorate([
     (0, common_1.Module)({
+        imports: [config_module_1.AppConfigModule],
         providers: [logger_service_1.AppLoggerService],
         exports: [logger_service_1.AppLoggerService],
     })

@@ -9,7 +9,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var AuthService_1;
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -91,7 +90,7 @@ let AuthService = AuthService_1 = class AuthService {
     async login(dto) {
         const lockout = await this.securityService.checkAccountLockout(dto.email);
         if (lockout.isLocked) {
-            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'ACCOUNT_LOCKED');
+            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'ACCOUNT_LOCKED');
             throw new common_1.UnauthorizedException({
                 message: 'Account is temporarily locked',
                 lockedUntil: lockout.lockedUntil,
@@ -115,22 +114,22 @@ let AuthService = AuthService_1 = class AuthService {
             },
         });
         if (!user) {
-            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'INVALID_CREDENTIALS');
+            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'INVALID_CREDENTIALS');
             await this.securityService.incrementFailedLoginAttempts(dto.email);
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
         if (!user.isActive) {
-            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'ACCOUNT_DEACTIVATED');
+            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'ACCOUNT_DEACTIVATED');
             throw new common_1.UnauthorizedException('Account is deactivated');
         }
         const isPasswordValid = await this.passwordService.verifyPassword(dto.password, user.passwordHash);
         if (!isPasswordValid) {
-            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'INVALID_PASSWORD');
+            await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'INVALID_PASSWORD');
             await this.securityService.incrementFailedLoginAttempts(dto.email);
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
         await this.securityService.resetFailedLoginAttempts(dto.email);
-        await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, true);
+        await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', true);
         if (user.isTwoFactorEnabled) {
             return {
                 requiresTwoFactor: true,
@@ -479,15 +478,18 @@ let AuthService = AuthService_1 = class AuthService {
                 where: { id: userId },
                 select: { organizationId: true },
             });
+            const auditData = {
+                userId,
+                action,
+                entity,
+                entityId,
+                changes: changes,
+            };
+            if (user?.organizationId) {
+                auditData.organizationId = user.organizationId;
+            }
             await this.prisma.auditLog.create({
-                data: {
-                    userId,
-                    action,
-                    entity,
-                    entityId,
-                    changes: changes,
-                    organizationId: user?.organizationId || 'system',
-                },
+                data: auditData,
             });
         }
         catch (error) {
@@ -499,7 +501,9 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService, typeof (_a = typeof config_service_1.ConfigService !== "undefined" && config_service_1.ConfigService) === "function" ? _a : Object, token_service_1.TokenService,
+        jwt_1.JwtService,
+        config_service_1.AppConfigService,
+        token_service_1.TokenService,
         security_service_1.SecurityService,
         password_service_1.PasswordService,
         email_service_1.EmailService,

@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConfigService } from '../../config/config.service';
+import { AppConfigService } from '../../config/config.service';
 interface TokenPayload {
     sub: string;
     email: string;
@@ -13,7 +13,7 @@ export declare class TokenService {
     private readonly prisma;
     private readonly configService;
     private readonly logger;
-    constructor(jwtService: JwtService, prisma: PrismaService, configService: ConfigService);
+    constructor(jwtService: JwtService, prisma: PrismaService, configService: AppConfigService);
     generateTokens(userId: string, email: string, role: string): Promise<{
         accessToken: string;
         refreshToken: string;

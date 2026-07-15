@@ -1,41 +1,70 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Redis } from 'ioredis';
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleInit {
   private readonly logger = new Logger(RedisService.name);
-  private redis: Redis;
+  private redis: Redis | null = null;
+  private isEnabled: boolean;
+  private hasLoggedWarning: boolean = false;
 
   constructor() {
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD || undefined,
-      retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
-    });
+    this.isEnabled = process.env.REDIS_ENABLED !== 'false';
+  }
 
-    this.redis.on('connect', () => {
-      this.logger.log('Connected to Redis');
-    });
+  onModuleInit() {
+    if (!this.isEnabled) {
+      this.logger.warn('Redis is disabled (REDIS_ENABLED=false). Using fallback storage.');
+      return;
+    }
 
-    this.redis.on('error', (error) => {
-      this.logger.error('Redis connection error', error);
-    });
+    try {
+      this.redis = new Redis({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD || undefined,
+        retryStrategy: (times) => {
+          const delay = Math.min(times * 50, 2000);
+          return delay;
+        },
+      });
+
+      this.redis.on('connect', () => {
+        this.logger.log('Connected to Redis');
+        this.hasLoggedWarning = false;
+      });
+
+      this.redis.on('error', (error) => {
+        if (!this.hasLoggedWarning) {
+          this.logger.warn('Redis connection failed. Using fallback storage for OTPs and caching.');
+          this.hasLoggedWarning = true;
+        }
+      });
+    } catch (error) {
+      this.logger.warn('Failed to initialize Redis. Using fallback storage.');
+      this.redis = null;
+    }
   }
 
   async get(key: string): Promise<string | null> {
+    if (!this.redis) {
+      return null;
+    }
     try {
       return await this.redis.get(key);
     } catch (error) {
-      this.logger.error(`Failed to get key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
       return null;
     }
   }
 
   async set(key: string, value: string, ttl?: number): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
     try {
       if (ttl) {
         await this.redis.setex(key, ttl, value);
@@ -43,50 +72,83 @@ export class RedisService {
         await this.redis.set(key, value);
       }
     } catch (error) {
-      this.logger.error(`Failed to set key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
     }
   }
 
   async del(key: string): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
     try {
       await this.redis.del(key);
     } catch (error) {
-      this.logger.error(`Failed to delete key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
     }
   }
 
   async exists(key: string): Promise<boolean> {
+    if (!this.redis) {
+      return false;
+    }
     try {
       const result = await this.redis.exists(key);
       return result === 1;
     } catch (error) {
-      this.logger.error(`Failed to check if key ${key} exists`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
       return false;
     }
   }
 
   async incr(key: string): Promise<number> {
+    if (!this.redis) {
+      return 0;
+    }
     try {
       return await this.redis.incr(key);
     } catch (error) {
-      this.logger.error(`Failed to increment key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
       return 0;
     }
   }
 
   async expire(key: string, ttl: number): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
     try {
       await this.redis.expire(key, ttl);
     } catch (error) {
-      this.logger.error(`Failed to set expiry for key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
     }
   }
 
   async ttl(key: string): Promise<number> {
+    if (!this.redis) {
+      return -1;
+    }
     try {
       return await this.redis.ttl(key);
     } catch (error) {
-      this.logger.error(`Failed to get TTL for key ${key}`, error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
       return -1;
     }
   }
@@ -142,14 +204,22 @@ export class RedisService {
   }
 
   async flushAll(): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
     try {
       await this.redis.flushall();
     } catch (error) {
-      this.logger.error('Failed to flush Redis', error);
+      if (!this.hasLoggedWarning) {
+        this.logger.warn('Redis operation failed. Using fallback storage.');
+        this.hasLoggedWarning = true;
+      }
     }
   }
 
   async disconnect(): Promise<void> {
-    await this.redis.quit();
+    if (this.redis) {
+      await this.redis.quit();
+    }
   }
 }

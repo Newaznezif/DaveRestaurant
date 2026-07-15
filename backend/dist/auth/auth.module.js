@@ -28,7 +28,7 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             prisma_module_1.PrismaModule,
-            config_module_1.ConfigModule,
+            config_module_1.AppConfigModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.register({}),
         ],

@@ -1,12 +1,12 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConfigService } from '../../config/config.service';
+import { AppConfigService } from '../../config/config.service';
 export declare class SecurityService {
     private readonly prisma;
     private readonly configService;
     private readonly logger;
     private readonly maxLoginAttempts;
     private readonly lockoutDuration;
-    constructor(prisma: PrismaService, configService: ConfigService);
+    constructor(prisma: PrismaService, configService: AppConfigService);
     recordLoginAttempt(email: string, ipAddress: string, userAgent: string, isSuccessful: boolean, failureReason?: string): Promise<void>;
     checkAccountLockout(email: string): Promise<{
         isLocked: boolean;

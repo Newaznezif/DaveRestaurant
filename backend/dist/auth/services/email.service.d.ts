@@ -1,10 +1,10 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConfigService } from '../../config/config.service';
+import { AppConfigService } from '../../config/config.service';
 export declare class EmailService {
     private readonly prisma;
     private readonly configService;
     private readonly logger;
-    constructor(prisma: PrismaService, configService: ConfigService);
+    constructor(prisma: PrismaService, configService: AppConfigService);
     sendEmailVerification(userId: string, email: string, token: string): Promise<{
         message: string;
         email: string;

@@ -1,7 +1,11 @@
-export declare class RedisService {
+import { OnModuleInit } from '@nestjs/common';
+export declare class RedisService implements OnModuleInit {
     private readonly logger;
     private redis;
+    private isEnabled;
+    private hasLoggedWarning;
     constructor();
+    onModuleInit(): void;
     get(key: string): Promise<string | null>;
     set(key: string, value: string, ttl?: number): Promise<void>;
     del(key: string): Promise<void>;

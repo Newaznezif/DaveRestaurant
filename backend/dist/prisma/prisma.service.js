@@ -27,13 +27,19 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
         this.logger = new common_1.Logger(PrismaService_1.name);
     }
     async onModuleInit() {
-        await this.$connect();
-        this.logger.log('Database connection established');
-        this.$on('query', (e) => {
-            if (process.env.NODE_ENV === 'development') {
-                this.logger.debug(`Query: ${e.query} | Duration: ${e.duration}ms`);
-            }
-        });
+        try {
+            await this.$connect();
+            this.logger.log('Database connection established');
+            this.$on('query', (e) => {
+                if (process.env.NODE_ENV === 'development') {
+                    this.logger.debug(`Query: ${e.query} | Duration: ${e.duration}ms`);
+                }
+            });
+        }
+        catch (error) {
+            this.logger.warn(`Database connection failed: ${error.message}`);
+            this.logger.warn('Application will continue but database operations will fail until connection is established');
+        }
     }
     async onModuleDestroy() {
         await this.$disconnect();

@@ -93,7 +93,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const lockout = await this.securityService.checkAccountLockout(dto.email);
     if (lockout.isLocked) {
-      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'ACCOUNT_LOCKED');
+      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'ACCOUNT_LOCKED');
       throw new UnauthorizedException({
         message: 'Account is temporarily locked',
         lockedUntil: lockout.lockedUntil,
@@ -119,25 +119,25 @@ export class AuthService {
     });
 
     if (!user) {
-      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'INVALID_CREDENTIALS');
+      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'INVALID_CREDENTIALS');
       await this.securityService.incrementFailedLoginAttempts(dto.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isActive) {
-      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'ACCOUNT_DEACTIVATED');
+      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'ACCOUNT_DEACTIVATED');
       throw new UnauthorizedException('Account is deactivated');
     }
 
     const isPasswordValid = await this.passwordService.verifyPassword(dto.password, user.passwordHash);
     if (!isPasswordValid) {
-      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, false, 'INVALID_PASSWORD');
+      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', false, 'INVALID_PASSWORD');
       await this.securityService.incrementFailedLoginAttempts(dto.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     await this.securityService.resetFailedLoginAttempts(dto.email);
-    await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress, dto.userAgent, true);
+      await this.securityService.recordLoginAttempt(dto.email, dto.ipAddress || '', dto.userAgent || '', true);
 
     if (user.isTwoFactorEnabled) {
       return {
@@ -563,15 +563,21 @@ export class AuthService {
         select: { organizationId: true },
       });
 
+      // Only include organizationId if user has a valid one
+      const auditData: any = {
+        userId,
+        action,
+        entity,
+        entityId,
+        changes: changes as any,
+      };
+
+      if (user?.organizationId) {
+        auditData.organizationId = user.organizationId;
+      }
+
       await this.prisma.auditLog.create({
-        data: {
-          userId,
-          action,
-          entity,
-          entityId,
-          changes: changes as any,
-          organizationId: user?.organizationId || 'system',
-        },
+        data: auditData,
       });
     } catch (error) {
       this.logger.error('Failed to create audit log', error);

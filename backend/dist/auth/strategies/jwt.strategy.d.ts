@@ -27,14 +27,14 @@ export declare class JwtStrategy extends JwtStrategy_base {
         avatar: string | null;
         organization: {
             id: string;
-            isActive: boolean;
             name: string;
+            isActive: boolean;
             slug: string;
         } | null;
         branch: {
             id: string;
-            isActive: boolean;
             name: string;
+            isActive: boolean;
         } | null;
     }>;
 }
