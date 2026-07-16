@@ -27,8 +27,8 @@ let BranchController = class BranchController {
     async create(data) {
         return this.branchService.create(data);
     }
-    async findAll(orgId) {
-        return this.branchService.findAll(orgId);
+    async findAll(organizationId) {
+        return this.branchService.findAll(organizationId);
     }
     async findById(id) {
         return this.branchService.findById(id);
@@ -50,9 +50,9 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BranchController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(':orgId'),
+    (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.RESTAURANT_OWNER, client_1.UserRole.MANAGER),
-    __param(0, (0, common_1.Param)('orgId')),
+    __param(0, (0, common_1.Query)('organizationId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)

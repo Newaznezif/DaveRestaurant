@@ -75,7 +75,7 @@ let AuthService = AuthService_1 = class AuthService {
         });
         const verificationToken = this.passwordService.generateSecureToken(32);
         await this.emailService.sendEmailVerification(user.id, user.email, verificationToken);
-        const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+        const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role, user.organizationId, user.branchId);
         await this.createSession(user.id, tokens.refreshToken, {
             userAgent: '',
             ipAddress: '',
@@ -137,7 +137,7 @@ let AuthService = AuthService_1 = class AuthService {
                 message: '2FA verification required',
             };
         }
-        const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+        const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role, user.organizationId, user.branchId);
         await this.createSession(user.id, tokens.refreshToken, {
             userAgent: dto.userAgent,
             ipAddress: dto.ipAddress,
@@ -179,6 +179,8 @@ let AuthService = AuthService_1 = class AuthService {
                             id: true,
                             email: true,
                             role: true,
+                            organizationId: true,
+                            branchId: true,
                         },
                     },
                 },
@@ -190,7 +192,7 @@ let AuthService = AuthService_1 = class AuthService {
                 where: { id: session.id },
                 data: { isActive: false },
             });
-            const tokens = await this.tokenService.generateTokens(session.user.id, session.user.email, session.user.role);
+            const tokens = await this.tokenService.generateTokens(session.user.id, session.user.email, session.user.role, session.user.organizationId, session.user.branchId);
             await this.createSession(session.user.id, tokens.refreshToken, {
                 userAgent: '',
                 ipAddress: '',

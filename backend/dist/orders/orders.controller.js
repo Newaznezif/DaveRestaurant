@@ -28,8 +28,8 @@ let OrdersController = class OrdersController {
     async create(data) {
         return this.ordersService.create(data);
     }
-    async findAll(orgId, query) {
-        return this.ordersService.findAll(orgId, query);
+    async findAll(organizationId, branchId, query) {
+        return this.ordersService.findAll(organizationId, branchId, query);
     }
     async findById(id) {
         return this.ordersService.findById(id);
@@ -60,12 +60,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(':orgId'),
+    (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Param)('orgId')),
-    __param(1, (0, common_1.Query)()),
+    __param(0, (0, common_1.Query)('organizationId')),
+    __param(1, (0, common_1.Query)('branchId')),
+    __param(2, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "findAll", null);
 __decorate([

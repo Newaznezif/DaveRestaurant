@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { BranchService } from './branch.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,10 +19,10 @@ export class BranchController {
     return this.branchService.create(data);
   }
 
-  @Get(':orgId')
+  @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.RESTAURANT_OWNER, UserRole.MANAGER)
-  async findAll(@Param('orgId') orgId: string) {
-    return this.branchService.findAll(orgId);
+  async findAll(@Query('organizationId') organizationId: string) {
+    return this.branchService.findAll(organizationId);
   }
 
   @Get(':id')

@@ -1,71 +1,17 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateReservationDto } from './dto/create-reservation.dto';
+import { UpdateReservationDto } from './dto/update-reservation.dto';
 export declare class ReservationsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    create(data: any): Promise<{
-        table: {
-            createdAt: Date;
-            id: string;
-            isActive: boolean;
-            organizationId: string;
-            branchId: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
-            updatedAt: Date;
-            notes: string | null;
-            status: import(".prisma/client").$Enums.TableStatus;
-            floorId: string | null;
-            tableNumber: string;
-            capacity: number;
-            minCapacity: number;
-            shape: string;
-            posX: number;
-            posY: number;
-            width: number;
-            height: number;
-            rotation: number;
-            isSmoking: boolean;
-            isVIP: boolean;
-            qrCode: string | null;
-            qrCodeUrl: string | null;
-        } | null;
-    } & {
-        createdAt: Date;
-        id: string;
-        organizationId: string;
-        branchId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        updatedAt: Date;
-        notes: string | null;
-        date: Date;
-        customerName: string;
-        customerEmail: string | null;
-        customerPhone: string | null;
-        status: import(".prisma/client").$Enums.ReservationStatus;
-        source: string | null;
-        tableId: string | null;
-        customerId: string | null;
-        guests: number;
-        time: string;
-        duration: number;
-        specialRequests: string | null;
-        occasion: string | null;
-        assignedServer: string | null;
-        reminderSent: boolean;
-    }>;
-    findAll(orgId: string, query?: any): Promise<{
-        data: unknown[];
-        meta: {
-            total: number;
-            page: number;
-            limit: number;
-            totalPages: number;
-            hasNextPage: boolean;
-            hasPreviousPage: boolean;
-        };
-    }>;
-    findById(id: string): Promise<({
+    findAll(orgId: string, filters?: {
+        branchId?: string;
+        status?: string;
+        date?: string;
+    }): Promise<({
         customer: {
             createdAt: Date;
+            organizationId: string | null;
             id: string;
             userId: string | null;
             email: string | null;
@@ -73,7 +19,6 @@ export declare class ReservationsService {
             firstName: string | null;
             lastName: string | null;
             avatar: string | null;
-            organizationId: string | null;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -90,10 +35,10 @@ export declare class ReservationsService {
         } | null;
         table: {
             createdAt: Date;
-            id: string;
-            isActive: boolean;
             organizationId: string;
             branchId: string;
+            id: string;
+            isActive: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -115,17 +60,17 @@ export declare class ReservationsService {
         } | null;
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.ReservationStatus;
         customerName: string;
         customerEmail: string | null;
         customerPhone: string | null;
-        status: import(".prisma/client").$Enums.ReservationStatus;
         source: string | null;
         tableId: string | null;
         customerId: string | null;
@@ -136,20 +81,70 @@ export declare class ReservationsService {
         occasion: string | null;
         assignedServer: string | null;
         reminderSent: boolean;
-    }) | null>;
-    updateStatus(id: string, status: string): Promise<{
+    })[]>;
+    findOne(orgId: string, id: string): Promise<{
+        customer: {
+            createdAt: Date;
+            organizationId: string | null;
+            id: string;
+            userId: string | null;
+            email: string | null;
+            phone: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            avatar: string | null;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            updatedAt: Date;
+            notes: string | null;
+            dateOfBirth: Date | null;
+            anniversary: Date | null;
+            gender: string | null;
+            totalOrders: number;
+            totalSpent: number;
+            loyaltyPoints: number;
+            loyaltyTier: import(".prisma/client").$Enums.LoyaltyTier;
+            segmentId: string | null;
+            tags: import("@prisma/client/runtime/library").JsonValue | null;
+            preferences: import("@prisma/client/runtime/library").JsonValue | null;
+        } | null;
+        table: {
+            createdAt: Date;
+            organizationId: string;
+            branchId: string;
+            id: string;
+            isActive: boolean;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            updatedAt: Date;
+            notes: string | null;
+            status: import(".prisma/client").$Enums.TableStatus;
+            floorId: string | null;
+            tableNumber: string;
+            capacity: number;
+            minCapacity: number;
+            shape: string;
+            posX: number;
+            posY: number;
+            width: number;
+            height: number;
+            rotation: number;
+            isSmoking: boolean;
+            isVIP: boolean;
+            qrCode: string | null;
+            qrCodeUrl: string | null;
+        } | null;
+    } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.ReservationStatus;
         customerName: string;
         customerEmail: string | null;
         customerPhone: string | null;
-        status: import(".prisma/client").$Enums.ReservationStatus;
         source: string | null;
         tableId: string | null;
         customerId: string | null;
@@ -161,13 +156,13 @@ export declare class ReservationsService {
         assignedServer: string | null;
         reminderSent: boolean;
     }>;
-    getByDate(branchId: string, date: string): Promise<({
+    create(orgId: string, dto: CreateReservationDto): Promise<{
         table: {
             createdAt: Date;
-            id: string;
-            isActive: boolean;
             organizationId: string;
             branchId: string;
+            id: string;
+            isActive: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -189,17 +184,144 @@ export declare class ReservationsService {
         } | null;
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.ReservationStatus;
         customerName: string;
         customerEmail: string | null;
         customerPhone: string | null;
+        source: string | null;
+        tableId: string | null;
+        customerId: string | null;
+        guests: number;
+        time: string;
+        duration: number;
+        specialRequests: string | null;
+        occasion: string | null;
+        assignedServer: string | null;
+        reminderSent: boolean;
+    }>;
+    update(orgId: string, id: string, dto: UpdateReservationDto): Promise<{
+        table: {
+            createdAt: Date;
+            organizationId: string;
+            branchId: string;
+            id: string;
+            isActive: boolean;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            updatedAt: Date;
+            notes: string | null;
+            status: import(".prisma/client").$Enums.TableStatus;
+            floorId: string | null;
+            tableNumber: string;
+            capacity: number;
+            minCapacity: number;
+            shape: string;
+            posX: number;
+            posY: number;
+            width: number;
+            height: number;
+            rotation: number;
+            isSmoking: boolean;
+            isVIP: boolean;
+            qrCode: string | null;
+            qrCodeUrl: string | null;
+        } | null;
+    } & {
+        createdAt: Date;
+        organizationId: string;
+        branchId: string;
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        notes: string | null;
+        date: Date;
         status: import(".prisma/client").$Enums.ReservationStatus;
+        customerName: string;
+        customerEmail: string | null;
+        customerPhone: string | null;
+        source: string | null;
+        tableId: string | null;
+        customerId: string | null;
+        guests: number;
+        time: string;
+        duration: number;
+        specialRequests: string | null;
+        occasion: string | null;
+        assignedServer: string | null;
+        reminderSent: boolean;
+    }>;
+    remove(orgId: string, id: string): Promise<{
+        success: boolean;
+    }>;
+    updateStatus(orgId: string, id: string, status: string): Promise<{
+        createdAt: Date;
+        organizationId: string;
+        branchId: string;
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        notes: string | null;
+        date: Date;
+        status: import(".prisma/client").$Enums.ReservationStatus;
+        customerName: string;
+        customerEmail: string | null;
+        customerPhone: string | null;
+        source: string | null;
+        tableId: string | null;
+        customerId: string | null;
+        guests: number;
+        time: string;
+        duration: number;
+        specialRequests: string | null;
+        occasion: string | null;
+        assignedServer: string | null;
+        reminderSent: boolean;
+    }>;
+    getByDate(orgId: string, branchId: string, date: string): Promise<({
+        table: {
+            createdAt: Date;
+            organizationId: string;
+            branchId: string;
+            id: string;
+            isActive: boolean;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            updatedAt: Date;
+            notes: string | null;
+            status: import(".prisma/client").$Enums.TableStatus;
+            floorId: string | null;
+            tableNumber: string;
+            capacity: number;
+            minCapacity: number;
+            shape: string;
+            posX: number;
+            posY: number;
+            width: number;
+            height: number;
+            rotation: number;
+            isSmoking: boolean;
+            isVIP: boolean;
+            qrCode: string | null;
+            qrCodeUrl: string | null;
+        } | null;
+    } & {
+        createdAt: Date;
+        organizationId: string;
+        branchId: string;
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        notes: string | null;
+        date: Date;
+        status: import(".prisma/client").$Enums.ReservationStatus;
+        customerName: string;
+        customerEmail: string | null;
+        customerPhone: string | null;
         source: string | null;
         tableId: string | null;
         customerId: string | null;

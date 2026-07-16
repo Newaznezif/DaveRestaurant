@@ -13,7 +13,7 @@ exports.GoogleStrategy = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_google_oauth20_1 = require("passport-google-oauth20");
-const auth_service_1 = require("../auth.service");
+const auth_service_1 = require("../services/auth.service");
 let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrategy)(passport_google_oauth20_1.Strategy, 'google') {
     constructor(authService) {
         super({

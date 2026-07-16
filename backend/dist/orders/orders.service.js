@@ -33,8 +33,12 @@ let OrdersService = OrdersService_1 = class OrdersService {
             return order;
         });
     }
-    async findAll(orgId, query = {}) {
-        return this.prisma.paginate('order', { organizationId: orgId, ...query }, {
+    async findAll(organizationId, branchId, query = {}) {
+        const { organizationId: _org, branchId: _branch, ...safeQuery } = query;
+        const where = { ...safeQuery, organizationId };
+        if (branchId)
+            where.branchId = branchId;
+        return this.prisma.paginate('order', where, {
             include: { items: { include: { addons: true } }, payments: true, table: true, customer: true },
             limit: 20,
         });

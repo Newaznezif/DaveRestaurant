@@ -4,10 +4,10 @@ export declare class TablesService {
     constructor(prisma: PrismaService);
     create(data: any): Promise<{
         createdAt: Date;
-        id: string;
-        isActive: boolean;
         organizationId: string;
         branchId: string;
+        id: string;
+        isActive: boolean;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
@@ -30,19 +30,20 @@ export declare class TablesService {
     findByBranch(branchId: string): Promise<({
         orders: {
             createdAt: Date;
-            id: string;
             organizationId: string;
             branchId: string;
+            id: string;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             taxRate: number;
             notes: string | null;
+            status: import(".prisma/client").$Enums.OrderStatus;
+            cancelledAt: Date | null;
             orderNumber: string;
             customerName: string | null;
             customerEmail: string | null;
             customerPhone: string | null;
             orderType: import(".prisma/client").$Enums.OrderType;
-            status: import(".prisma/client").$Enums.OrderStatus;
             paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
             subtotal: number;
@@ -63,7 +64,6 @@ export declare class TablesService {
             readyAt: Date | null;
             servedAt: Date | null;
             completedAt: Date | null;
-            cancelledAt: Date | null;
             cancellationReason: string | null;
             source: string | null;
             posUserId: string | null;
@@ -73,10 +73,10 @@ export declare class TablesService {
         }[];
         floor: {
             createdAt: Date;
+            branchId: string;
             id: string;
             name: string;
             isActive: boolean;
-            branchId: string;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             image: string | null;
@@ -87,10 +87,10 @@ export declare class TablesService {
         } | null;
     } & {
         createdAt: Date;
-        id: string;
-        isActive: boolean;
         organizationId: string;
         branchId: string;
+        id: string;
+        isActive: boolean;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
@@ -112,10 +112,10 @@ export declare class TablesService {
     })[]>;
     update(id: string, data: any): Promise<{
         createdAt: Date;
-        id: string;
-        isActive: boolean;
         organizationId: string;
         branchId: string;
+        id: string;
+        isActive: boolean;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
@@ -137,10 +137,10 @@ export declare class TablesService {
     }>;
     updateStatus(id: string, status: string): Promise<{
         createdAt: Date;
-        id: string;
-        isActive: boolean;
         organizationId: string;
         branchId: string;
+        id: string;
+        isActive: boolean;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
@@ -162,10 +162,10 @@ export declare class TablesService {
     }>;
     createFloor(data: any): Promise<{
         createdAt: Date;
+        branchId: string;
         id: string;
         name: string;
         isActive: boolean;
-        branchId: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         image: string | null;
@@ -177,10 +177,10 @@ export declare class TablesService {
     getFloors(branchId: string): Promise<({
         tables: {
             createdAt: Date;
-            id: string;
-            isActive: boolean;
             organizationId: string;
             branchId: string;
+            id: string;
+            isActive: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -202,10 +202,10 @@ export declare class TablesService {
         }[];
     } & {
         createdAt: Date;
+        branchId: string;
         id: string;
         name: string;
         isActive: boolean;
-        branchId: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         image: string | null;
@@ -216,10 +216,10 @@ export declare class TablesService {
     })[]>;
     updateFloor(id: string, data: any): Promise<{
         createdAt: Date;
+        branchId: string;
         id: string;
         name: string;
         isActive: boolean;
-        branchId: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         image: string | null;

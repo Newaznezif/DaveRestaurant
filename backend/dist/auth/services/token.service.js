@@ -22,8 +22,14 @@ let TokenService = TokenService_1 = class TokenService {
         this.configService = configService;
         this.logger = new common_1.Logger(TokenService_1.name);
     }
-    async generateTokens(userId, email, role) {
-        const payload = { sub: userId, email, role };
+    async generateTokens(userId, email, role, organizationId, branchId) {
+        const payload = {
+            sub: userId,
+            email,
+            role,
+            ...(organizationId ? { organizationId } : {}),
+            ...(branchId ? { branchId } : {}),
+        };
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: this.configService.jwt.accessSecret,

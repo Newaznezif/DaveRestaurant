@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -12,10 +12,13 @@ import { UserRole } from '@prisma/client';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
-  @Get('dashboard/:orgId')
+  @Get('dashboard')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.RESTAURANT_OWNER, UserRole.MANAGER)
-  async getDashboard(@Param('orgId') orgId: string) {
-    return this.analyticsService.getDashboard(orgId);
+  async getDashboard(
+    @Query('organizationId') organizationId: string,
+    @Query('branchId') branchId?: string,
+  ) {
+    return this.analyticsService.getDashboard(organizationId, branchId);
   }
 }

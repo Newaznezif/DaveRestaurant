@@ -72,27 +72,27 @@ export declare class OrganizationController {
     findById(id: string): Promise<({
         subscription: {
             createdAt: Date;
-            id: string;
             organizationId: string;
+            id: string;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
-            cancelledAt: Date | null;
             planId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             currentPeriodStart: Date;
             currentPeriodEnd: Date;
+            cancelledAt: Date | null;
             paymentMethodId: string | null;
             autoRenew: boolean;
         } | null;
         branches: {
             createdAt: Date;
+            organizationId: string;
             id: string;
             name: string;
             isActive: boolean;
             email: string | null;
             phone: string | null;
-            organizationId: string;
             settings: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             slug: string;
@@ -144,12 +144,12 @@ export declare class OrganizationController {
     findBySlug(slug: string): Promise<({
         branches: {
             createdAt: Date;
+            organizationId: string;
             id: string;
             name: string;
             isActive: boolean;
             email: string | null;
             phone: string | null;
-            organizationId: string;
             settings: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             slug: string;
@@ -199,6 +199,37 @@ export declare class OrganizationController {
         features: import("@prisma/client/runtime/library").JsonValue | null;
     }) | null>;
     update(id: string, data: any): Promise<{
+        createdAt: Date;
+        id: string;
+        name: string;
+        isActive: boolean;
+        email: string | null;
+        phone: string | null;
+        isVerified: boolean;
+        settings: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        slug: string;
+        logo: string | null;
+        favicon: string | null;
+        primaryColor: string;
+        secondaryColor: string;
+        accentColor: string;
+        domain: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        country: string | null;
+        postalCode: string | null;
+        timezone: string;
+        currency: string;
+        dateFormat: string;
+        businessType: string;
+        taxRate: number;
+        taxId: string | null;
+        subscriptionId: string | null;
+        features: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+    delete(id: string): Promise<{
         createdAt: Date;
         id: string;
         name: string;

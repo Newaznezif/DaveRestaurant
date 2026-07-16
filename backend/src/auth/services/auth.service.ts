@@ -74,7 +74,7 @@ export class AuthService {
     const verificationToken = this.passwordService.generateSecureToken(32);
     await this.emailService.sendEmailVerification(user.id, user.email, verificationToken);
 
-    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role, user.organizationId, user.branchId);
 
     await this.createSession(user.id, tokens.refreshToken, {
       userAgent: '',
@@ -147,7 +147,7 @@ export class AuthService {
       };
     }
 
-    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role, user.organizationId, user.branchId);
 
     await this.createSession(user.id, tokens.refreshToken, {
       userAgent: dto.userAgent,
@@ -195,6 +195,8 @@ export class AuthService {
               id: true,
               email: true,
               role: true,
+              organizationId: true,
+              branchId: true,
             },
           },
         },
@@ -213,6 +215,8 @@ export class AuthService {
         session.user.id,
         session.user.email,
         session.user.role,
+        (session.user as any).organizationId,
+        (session.user as any).branchId,
       );
 
       await this.createSession(session.user.id, tokens.refreshToken, {

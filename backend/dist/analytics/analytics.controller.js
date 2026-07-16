@@ -24,18 +24,19 @@ let AnalyticsController = class AnalyticsController {
     constructor(analyticsService) {
         this.analyticsService = analyticsService;
     }
-    async getDashboard(orgId) {
-        return this.analyticsService.getDashboard(orgId);
+    async getDashboard(organizationId, branchId) {
+        return this.analyticsService.getDashboard(organizationId, branchId);
     }
 };
 exports.AnalyticsController = AnalyticsController;
 __decorate([
-    (0, common_1.Get)('dashboard/:orgId'),
+    (0, common_1.Get)('dashboard'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.RESTAURANT_OWNER, client_1.UserRole.MANAGER),
-    __param(0, (0, common_1.Param)('orgId')),
+    __param(0, (0, common_1.Query)('organizationId')),
+    __param(1, (0, common_1.Query)('branchId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "getDashboard", null);
 exports.AnalyticsController = AnalyticsController = __decorate([

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -39,5 +39,11 @@ export class OrganizationController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.RESTAURANT_OWNER)
   async update(@Param('id') id: string, @Body() data: any) {
     return this.orgService.update(id, data);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.SUPER_ADMIN)
+  async delete(@Param('id') id: string) {
+    return this.orgService.delete(id);
   }
 }

@@ -1,9 +1,94 @@
 import { SuppliersService } from './suppliers.service';
+import { CreateSupplierDto } from './dto/create-supplier.dto';
+import { UpdateSupplierDto } from './dto/update-supplier.dto';
 export declare class SuppliersController {
     private readonly suppliersService;
     constructor(suppliersService: SuppliersService);
-    create(orgId: string, data: any): Promise<{
-        message: string;
+    findAll(orgId: string): Promise<{
+        createdAt: Date;
+        organizationId: string;
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        country: string | null;
+        postalCode: string | null;
+        taxId: string | null;
+        notes: string | null;
+        status: import(".prisma/client").$Enums.SupplierStatus;
+        contactName: string | null;
+        paymentTerms: string | null;
+        rating: number | null;
+    }[]>;
+    findOne(orgId: string, id: string): Promise<{
+        createdAt: Date;
+        organizationId: string;
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        country: string | null;
+        postalCode: string | null;
+        taxId: string | null;
+        notes: string | null;
+        status: import(".prisma/client").$Enums.SupplierStatus;
+        contactName: string | null;
+        paymentTerms: string | null;
+        rating: number | null;
     }>;
-    findAll(orgId: string): Promise<never[]>;
+    create(orgId: string, dto: CreateSupplierDto): Promise<{
+        createdAt: Date;
+        organizationId: string;
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        country: string | null;
+        postalCode: string | null;
+        taxId: string | null;
+        notes: string | null;
+        status: import(".prisma/client").$Enums.SupplierStatus;
+        contactName: string | null;
+        paymentTerms: string | null;
+        rating: number | null;
+    }>;
+    update(orgId: string, id: string, dto: UpdateSupplierDto): Promise<{
+        createdAt: Date;
+        organizationId: string;
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        updatedAt: Date;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        country: string | null;
+        postalCode: string | null;
+        taxId: string | null;
+        notes: string | null;
+        status: import(".prisma/client").$Enums.SupplierStatus;
+        contactName: string | null;
+        paymentTerms: string | null;
+        rating: number | null;
+    }>;
+    remove(orgId: string, id: string): Promise<{
+        success: boolean;
+    }>;
 }

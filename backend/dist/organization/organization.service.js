@@ -41,6 +41,11 @@ let OrganizationService = OrganizationService_1 = class OrganizationService {
             include: { branches: { where: { isActive: true } } },
         });
     }
+    async delete(id) {
+        return this.prisma.organization.delete({
+            where: { id },
+        });
+    }
 };
 exports.OrganizationService = OrganizationService;
 exports.OrganizationService = OrganizationService = OrganizationService_1 = __decorate([

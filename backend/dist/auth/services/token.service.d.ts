@@ -14,7 +14,7 @@ export declare class TokenService {
     private readonly configService;
     private readonly logger;
     constructor(jwtService: JwtService, prisma: PrismaService, configService: AppConfigService);
-    generateTokens(userId: string, email: string, role: string): Promise<{
+    generateTokens(userId: string, email: string, role: string, organizationId?: string | null, branchId?: string | null): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;

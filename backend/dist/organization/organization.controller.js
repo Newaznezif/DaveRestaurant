@@ -39,6 +39,9 @@ let OrganizationController = class OrganizationController {
     async update(id, data) {
         return this.orgService.update(id, data);
     }
+    async delete(id) {
+        return this.orgService.delete(id);
+    }
 };
 exports.OrganizationController = OrganizationController;
 __decorate([
@@ -79,6 +82,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrganizationController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.SUPER_ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], OrganizationController.prototype, "delete", null);
 exports.OrganizationController = OrganizationController = __decorate([
     (0, swagger_1.ApiTags)('Organizations'),
     (0, swagger_1.ApiBearerAuth)(),

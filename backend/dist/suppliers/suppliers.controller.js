@@ -18,39 +18,79 @@ const swagger_1 = require("@nestjs/swagger");
 const suppliers_service_1 = require("./suppliers.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
+const create_supplier_dto_1 = require("./dto/create-supplier.dto");
+const update_supplier_dto_1 = require("./dto/update-supplier.dto");
 let SuppliersController = class SuppliersController {
     constructor(suppliersService) {
         this.suppliersService = suppliersService;
     }
-    async create(orgId, data) {
-        return this.suppliersService.create(orgId, data);
-    }
     async findAll(orgId) {
         return this.suppliersService.findAll(orgId);
+    }
+    async findOne(orgId, id) {
+        return this.suppliersService.findOne(orgId, id);
+    }
+    async create(orgId, dto) {
+        return this.suppliersService.create(orgId, dto);
+    }
+    async update(orgId, id, dto) {
+        return this.suppliersService.update(orgId, id, dto);
+    }
+    async remove(orgId, id) {
+        return this.suppliersService.remove(orgId, id);
     }
 };
 exports.SuppliersController = SuppliersController;
 __decorate([
-    (0, common_1.Post)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
-], SuppliersController.prototype, "create", null);
-__decorate([
     (0, common_1.Get)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all suppliers' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], SuppliersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get supplier by ID' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], SuppliersController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a supplier' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, create_supplier_dto_1.CreateSupplierDto]),
+    __metadata("design:returntype", Promise)
+], SuppliersController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a supplier' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, update_supplier_dto_1.UpdateSupplierDto]),
+    __metadata("design:returntype", Promise)
+], SuppliersController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a supplier' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], SuppliersController.prototype, "remove", null);
 exports.SuppliersController = SuppliersController = __decorate([
     (0, swagger_1.ApiTags)('Suppliers'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('suppliers'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [suppliers_service_1.SuppliersService])
 ], SuppliersController);
 //# sourceMappingURL=suppliers.controller.js.map

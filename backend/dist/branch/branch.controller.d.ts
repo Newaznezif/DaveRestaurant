@@ -4,12 +4,12 @@ export declare class BranchController {
     constructor(branchService: BranchService);
     create(data: any): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -27,14 +27,14 @@ export declare class BranchController {
         isHeadOffice: boolean;
         image: string | null;
     }>;
-    findAll(orgId: string): Promise<{
+    findAll(organizationId: string): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -60,12 +60,12 @@ export declare class BranchController {
         };
     } & {
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -85,12 +85,12 @@ export declare class BranchController {
     }) | null>;
     update(id: string, data: any): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -110,12 +110,12 @@ export declare class BranchController {
     }>;
     delete(id: string): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;

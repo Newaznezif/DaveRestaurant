@@ -45,6 +45,8 @@ export declare class UsersController {
     }>;
     deactivate(id: string): Promise<{
         createdAt: Date;
+        organizationId: string | null;
+        branchId: string | null;
         id: string;
         isActive: boolean;
         email: string;
@@ -55,8 +57,6 @@ export declare class UsersController {
         displayName: string | null;
         avatar: string | null;
         role: import(".prisma/client").$Enums.UserRole;
-        organizationId: string | null;
-        branchId: string | null;
         isVerified: boolean;
         isTwoFactorEnabled: boolean;
         twoFactorSecret: string | null;
@@ -69,6 +69,8 @@ export declare class UsersController {
     }>;
     activate(id: string): Promise<{
         createdAt: Date;
+        organizationId: string | null;
+        branchId: string | null;
         id: string;
         isActive: boolean;
         email: string;
@@ -79,8 +81,6 @@ export declare class UsersController {
         displayName: string | null;
         avatar: string | null;
         role: import(".prisma/client").$Enums.UserRole;
-        organizationId: string | null;
-        branchId: string | null;
         isVerified: boolean;
         isTwoFactorEnabled: boolean;
         twoFactorSecret: string | null;

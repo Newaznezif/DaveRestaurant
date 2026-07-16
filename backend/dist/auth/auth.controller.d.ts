@@ -15,14 +15,14 @@ export declare class AuthController {
         refreshToken: string;
         user: {
             createdAt: Date;
+            organizationId: string | null;
+            branchId: string | null;
             id: string;
             email: string;
             firstName: string | null;
             lastName: string | null;
             displayName: string | null;
             role: import(".prisma/client").$Enums.UserRole;
-            organizationId: string | null;
-            branchId: string | null;
         };
     }>;
     login(dto: LoginDto): Promise<{

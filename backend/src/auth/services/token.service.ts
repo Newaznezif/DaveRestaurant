@@ -21,8 +21,20 @@ export class TokenService {
     private readonly configService: AppConfigService,
   ) {}
 
-  async generateTokens(userId: string, email: string, role: string) {
-    const payload: TokenPayload = { sub: userId, email, role };
+  async generateTokens(
+    userId: string,
+    email: string,
+    role: string,
+    organizationId?: string | null,
+    branchId?: string | null,
+  ) {
+    const payload: TokenPayload = {
+      sub: userId,
+      email,
+      role,
+      ...(organizationId ? { organizationId } : {}),
+      ...(branchId ? { branchId } : {}),
+    };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {

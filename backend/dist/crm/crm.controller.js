@@ -18,27 +18,92 @@ const swagger_1 = require("@nestjs/swagger");
 const crm_service_1 = require("./crm.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
+const create_customer_dto_1 = require("./dto/create-customer.dto");
+const update_customer_dto_1 = require("./dto/update-customer.dto");
 let CrmController = class CrmController {
     constructor(crmService) {
         this.crmService = crmService;
     }
-    async findAll(userId) {
-        return this.crmService.getCustomers(userId);
+    async findAll(orgId) {
+        return this.crmService.findAll(orgId);
+    }
+    async findOne(orgId, id) {
+        return this.crmService.findOne(orgId, id);
+    }
+    async create(orgId, createCustomerDto) {
+        return this.crmService.create(orgId, createCustomerDto);
+    }
+    async update(orgId, id, updateCustomerDto) {
+        return this.crmService.update(orgId, id, updateCustomerDto);
+    }
+    async remove(orgId, id) {
+        return this.crmService.remove(orgId, id);
+    }
+    async updateLoyalty(orgId, id, points) {
+        return this.crmService.updateLoyalty(orgId, id, points);
     }
 };
 exports.CrmController = CrmController;
 __decorate([
-    (0, common_1.Get)('customers'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all customers for organization' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], CrmController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a customer by ID' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], CrmController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new customer' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, create_customer_dto_1.CreateCustomerDto]),
+    __metadata("design:returntype", Promise)
+], CrmController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a customer' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, update_customer_dto_1.UpdateCustomerDto]),
+    __metadata("design:returntype", Promise)
+], CrmController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a customer' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], CrmController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)(':id/loyalty'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update customer loyalty points' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('points')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number]),
+    __metadata("design:returntype", Promise)
+], CrmController.prototype, "updateLoyalty", null);
 exports.CrmController = CrmController = __decorate([
-    (0, swagger_1.ApiTags)('CRM'),
+    (0, swagger_1.ApiTags)('Customers'),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.Controller)('crm'),
+    (0, common_1.Controller)('customers'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [crm_service_1.CrmService])
 ], CrmController);
 //# sourceMappingURL=crm.controller.js.map

@@ -16,12 +16,10 @@ let MenuService = class MenuService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createCategory(data) {
-        return this.prisma.menuCategory.create({ data });
-    }
     async getCategories(orgId) {
         return this.prisma.menuCategory.findMany({
-            where: { organizationId: orgId, isActive: true },
+            where: { organizationId: orgId },
+            orderBy: { sortOrder: 'asc' },
             include: {
                 products: {
                     where: { isActive: true },
@@ -31,14 +29,65 @@ let MenuService = class MenuService {
             },
         });
     }
-    async createProduct(data) {
-        return this.prisma.product.create({ data });
+    async getCategory(orgId, id) {
+        const category = await this.prisma.menuCategory.findFirst({
+            where: { id, organizationId: orgId },
+        });
+        if (!category)
+            throw new common_1.NotFoundException('Category not found');
+        return category;
+    }
+    async createCategory(orgId, dto) {
+        const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now();
+        return this.prisma.menuCategory.create({
+            data: { ...dto, organizationId: orgId, slug },
+        });
+    }
+    async updateCategory(orgId, id, dto) {
+        await this.getCategory(orgId, id);
+        return this.prisma.menuCategory.update({
+            where: { id },
+            data: dto,
+        });
+    }
+    async deleteCategory(orgId, id) {
+        await this.getCategory(orgId, id);
+        await this.prisma.menuCategory.delete({ where: { id } });
+        return { success: true };
     }
     async getProducts(orgId, categoryId) {
         return this.prisma.product.findMany({
-            where: { organizationId: orgId, isActive: true, ...(categoryId && { categoryId }) },
+            where: { organizationId: orgId, ...(categoryId && { categoryId }) },
             include: { variants: true, addonGroups: { include: { items: true } }, category: true },
+            orderBy: { name: 'asc' }
         });
+    }
+    async getProduct(orgId, id) {
+        const product = await this.prisma.product.findFirst({
+            where: { id, organizationId: orgId },
+            include: { category: true }
+        });
+        if (!product)
+            throw new common_1.NotFoundException('Product not found');
+        return product;
+    }
+    async createProduct(orgId, dto) {
+        const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now();
+        return this.prisma.product.create({
+            data: { ...dto, organizationId: orgId, slug },
+        });
+    }
+    async updateProduct(orgId, id, dto) {
+        await this.getProduct(orgId, id);
+        return this.prisma.product.update({
+            where: { id },
+            data: dto,
+        });
+    }
+    async deleteProduct(orgId, id) {
+        await this.getProduct(orgId, id);
+        await this.prisma.product.delete({ where: { id } });
+        return { success: true };
     }
 };
 exports.MenuService = MenuService;

@@ -4,12 +4,12 @@ export declare class BranchService {
     constructor(prisma: PrismaService);
     create(data: any): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -29,12 +29,12 @@ export declare class BranchService {
     }>;
     findAll(orgId: string): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -60,12 +60,12 @@ export declare class BranchService {
         };
     } & {
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -85,12 +85,12 @@ export declare class BranchService {
     }) | null>;
     update(id: string, data: any): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;
@@ -110,12 +110,12 @@ export declare class BranchService {
     }>;
     delete(id: string): Promise<{
         createdAt: Date;
+        organizationId: string;
         id: string;
         name: string;
         isActive: boolean;
         email: string | null;
         phone: string | null;
-        organizationId: string;
         settings: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         slug: string;

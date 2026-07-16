@@ -33,4 +33,10 @@ export class OrganizationService {
       include: { branches: { where: { isActive: true } } },
     });
   }
+
+  async delete(id: string) {
+    return this.prisma.organization.delete({
+      where: { id },
+    });
+  }
 }

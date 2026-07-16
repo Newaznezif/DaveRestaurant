@@ -20,12 +20,12 @@ export declare class OrdersController {
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
-            price: number;
             status: string;
+            price: number;
+            productId: string;
             subtotal: number;
             completedAt: Date | null;
             orderId: string;
-            productId: string;
             variantId: string | null;
             quantity: number;
             cookingTime: number | null;
@@ -33,19 +33,20 @@ export declare class OrdersController {
         })[];
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         taxRate: number;
         notes: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        cancelledAt: Date | null;
         orderNumber: string;
         customerName: string | null;
         customerEmail: string | null;
         customerPhone: string | null;
         orderType: import(".prisma/client").$Enums.OrderType;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         subtotal: number;
@@ -66,7 +67,6 @@ export declare class OrdersController {
         readyAt: Date | null;
         servedAt: Date | null;
         completedAt: Date | null;
-        cancelledAt: Date | null;
         cancellationReason: string | null;
         source: string | null;
         posUserId: string | null;
@@ -74,7 +74,7 @@ export declare class OrdersController {
         customerId: string | null;
         couponId: string | null;
     }>;
-    findAll(orgId: string, query: any): Promise<{
+    findAll(organizationId: string, branchId: string, query: any): Promise<{
         data: unknown[];
         meta: {
             total: number;
@@ -112,6 +112,7 @@ export declare class OrdersController {
         } | null;
         customer: {
             createdAt: Date;
+            organizationId: string | null;
             id: string;
             userId: string | null;
             email: string | null;
@@ -119,7 +120,6 @@ export declare class OrdersController {
             firstName: string | null;
             lastName: string | null;
             avatar: string | null;
-            organizationId: string | null;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -137,11 +137,11 @@ export declare class OrdersController {
         items: ({
             product: {
                 createdAt: Date;
+                organizationId: string;
+                branchId: string | null;
                 id: string;
                 name: string;
                 isActive: boolean;
-                organizationId: string;
-                branchId: string | null;
                 metadata: import("@prisma/client/runtime/library").JsonValue | null;
                 updatedAt: Date;
                 slug: string;
@@ -149,16 +149,17 @@ export declare class OrdersController {
                 image: string | null;
                 description: string | null;
                 sortOrder: number;
-                isFeatured: boolean;
-                shortDescription: string | null;
                 price: number;
-                compareAtPrice: number | null;
-                costPrice: number | null;
                 sku: string | null;
                 barcode: string | null;
+                isAvailable: boolean;
+                categoryId: string;
+                isFeatured: boolean;
+                shortDescription: string | null;
+                compareAtPrice: number | null;
+                costPrice: number | null;
                 images: import("@prisma/client/runtime/library").JsonValue | null;
                 video: string | null;
-                isAvailable: boolean;
                 isCombo: boolean;
                 isPopular: boolean;
                 preparationTime: number | null;
@@ -167,7 +168,6 @@ export declare class OrdersController {
                 ingredients: string | null;
                 allergens: string | null;
                 taxExempt: boolean;
-                categoryId: string;
             };
             addons: {
                 createdAt: Date;
@@ -185,12 +185,12 @@ export declare class OrdersController {
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
-            price: number;
             status: string;
+            price: number;
+            productId: string;
             subtotal: number;
             completedAt: Date | null;
             orderId: string;
-            productId: string;
             variantId: string | null;
             quantity: number;
             cookingTime: number | null;
@@ -198,10 +198,10 @@ export declare class OrdersController {
         })[];
         table: {
             createdAt: Date;
-            id: string;
-            isActive: boolean;
             organizationId: string;
             branchId: string;
+            id: string;
+            isActive: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -236,19 +236,20 @@ export declare class OrdersController {
         }[];
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         taxRate: number;
         notes: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        cancelledAt: Date | null;
         orderNumber: string;
         customerName: string | null;
         customerEmail: string | null;
         customerPhone: string | null;
         orderType: import(".prisma/client").$Enums.OrderType;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         subtotal: number;
@@ -269,7 +270,6 @@ export declare class OrdersController {
         readyAt: Date | null;
         servedAt: Date | null;
         completedAt: Date | null;
-        cancelledAt: Date | null;
         cancellationReason: string | null;
         source: string | null;
         posUserId: string | null;
@@ -285,12 +285,12 @@ export declare class OrdersController {
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
-            price: number;
             status: string;
+            price: number;
+            productId: string;
             subtotal: number;
             completedAt: Date | null;
             orderId: string;
-            productId: string;
             variantId: string | null;
             quantity: number;
             cookingTime: number | null;
@@ -311,19 +311,20 @@ export declare class OrdersController {
         }[];
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         taxRate: number;
         notes: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        cancelledAt: Date | null;
         orderNumber: string;
         customerName: string | null;
         customerEmail: string | null;
         customerPhone: string | null;
         orderType: import(".prisma/client").$Enums.OrderType;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         subtotal: number;
@@ -344,7 +345,6 @@ export declare class OrdersController {
         readyAt: Date | null;
         servedAt: Date | null;
         completedAt: Date | null;
-        cancelledAt: Date | null;
         cancellationReason: string | null;
         source: string | null;
         posUserId: string | null;
@@ -354,19 +354,20 @@ export declare class OrdersController {
     }) | null>;
     updateStatus(id: string, status: string): Promise<{
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         taxRate: number;
         notes: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        cancelledAt: Date | null;
         orderNumber: string;
         customerName: string | null;
         customerEmail: string | null;
         customerPhone: string | null;
         orderType: import(".prisma/client").$Enums.OrderType;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         subtotal: number;
@@ -387,7 +388,6 @@ export declare class OrdersController {
         readyAt: Date | null;
         servedAt: Date | null;
         completedAt: Date | null;
-        cancelledAt: Date | null;
         cancellationReason: string | null;
         source: string | null;
         posUserId: string | null;
@@ -412,11 +412,11 @@ export declare class OrdersController {
         items: ({
             product: {
                 createdAt: Date;
+                organizationId: string;
+                branchId: string | null;
                 id: string;
                 name: string;
                 isActive: boolean;
-                organizationId: string;
-                branchId: string | null;
                 metadata: import("@prisma/client/runtime/library").JsonValue | null;
                 updatedAt: Date;
                 slug: string;
@@ -424,16 +424,17 @@ export declare class OrdersController {
                 image: string | null;
                 description: string | null;
                 sortOrder: number;
-                isFeatured: boolean;
-                shortDescription: string | null;
                 price: number;
-                compareAtPrice: number | null;
-                costPrice: number | null;
                 sku: string | null;
                 barcode: string | null;
+                isAvailable: boolean;
+                categoryId: string;
+                isFeatured: boolean;
+                shortDescription: string | null;
+                compareAtPrice: number | null;
+                costPrice: number | null;
                 images: import("@prisma/client/runtime/library").JsonValue | null;
                 video: string | null;
-                isAvailable: boolean;
                 isCombo: boolean;
                 isPopular: boolean;
                 preparationTime: number | null;
@@ -442,7 +443,6 @@ export declare class OrdersController {
                 ingredients: string | null;
                 allergens: string | null;
                 taxExempt: boolean;
-                categoryId: string;
             };
             addons: {
                 createdAt: Date;
@@ -460,12 +460,12 @@ export declare class OrdersController {
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
-            price: number;
             status: string;
+            price: number;
+            productId: string;
             subtotal: number;
             completedAt: Date | null;
             orderId: string;
-            productId: string;
             variantId: string | null;
             quantity: number;
             cookingTime: number | null;
@@ -473,10 +473,10 @@ export declare class OrdersController {
         })[];
         table: {
             createdAt: Date;
-            id: string;
-            isActive: boolean;
             organizationId: string;
             branchId: string;
+            id: string;
+            isActive: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
             notes: string | null;
@@ -498,19 +498,20 @@ export declare class OrdersController {
         } | null;
     } & {
         createdAt: Date;
-        id: string;
         organizationId: string;
         branchId: string;
+        id: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         taxRate: number;
         notes: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        cancelledAt: Date | null;
         orderNumber: string;
         customerName: string | null;
         customerEmail: string | null;
         customerPhone: string | null;
         orderType: import(".prisma/client").$Enums.OrderType;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
         subtotal: number;
@@ -531,7 +532,6 @@ export declare class OrdersController {
         readyAt: Date | null;
         servedAt: Date | null;
         completedAt: Date | null;
-        cancelledAt: Date | null;
         cancellationReason: string | null;
         source: string | null;
         posUserId: string | null;
@@ -546,12 +546,12 @@ export declare class OrdersController {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         updatedAt: Date;
         notes: string | null;
-        price: number;
         status: string;
+        price: number;
+        productId: string;
         subtotal: number;
         completedAt: Date | null;
         orderId: string;
-        productId: string;
         variantId: string | null;
         quantity: number;
         cookingTime: number | null;

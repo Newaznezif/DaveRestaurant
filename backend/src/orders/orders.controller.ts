@@ -18,10 +18,14 @@ export class OrdersController {
     return this.ordersService.create(data);
   }
 
-  @Get(':orgId')
+  @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(@Param('orgId') orgId: string, @Query() query: any) {
-    return this.ordersService.findAll(orgId, query);
+  async findAll(
+    @Query('organizationId') organizationId: string,
+    @Query('branchId') branchId: string,
+    @Query() query: any,
+  ) {
+    return this.ordersService.findAll(organizationId, branchId, query);
   }
 
   @Get('detail/:id')
