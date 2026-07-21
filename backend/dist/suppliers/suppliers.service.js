@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SuppliersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 let SuppliersService = class SuppliersService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -19,12 +20,29 @@ let SuppliersService = class SuppliersService {
     async findAll(orgId) {
         return this.prisma.supplier.findMany({
             where: { organizationId: orgId },
+            include: {
+                _count: { select: { purchaseOrders: true } },
+            },
             orderBy: { name: 'asc' },
         });
     }
     async findOne(orgId, id) {
         const supplier = await this.prisma.supplier.findFirst({
             where: { id, organizationId: orgId },
+            include: {
+                purchaseOrders: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 10,
+                    select: {
+                        id: true,
+                        orderNumber: true,
+                        status: true,
+                        totalAmount: true,
+                        createdAt: true,
+                    },
+                },
+                _count: { select: { purchaseOrders: true } },
+            },
         });
         if (!supplier)
             throw new common_1.NotFoundException('Supplier not found');
@@ -39,10 +57,21 @@ let SuppliersService = class SuppliersService {
         await this.findOne(orgId, id);
         return this.prisma.supplier.update({ where: { id }, data: dto });
     }
-    async remove(orgId, id) {
+    async updateStatus(orgId, id, status) {
         await this.findOne(orgId, id);
+        return this.prisma.supplier.update({ where: { id }, data: { status } });
+    }
+    async remove(orgId, id) {
+        const supplier = await this.findOne(orgId, id);
+        if (supplier._count?.purchaseOrders > 0) {
+            await this.prisma.supplier.update({
+                where: { id },
+                data: { status: client_1.SupplierStatus.INACTIVE },
+            });
+            return { success: true, archived: true, message: 'Supplier has purchase orders — archived instead of deleted.' };
+        }
         await this.prisma.supplier.delete({ where: { id } });
-        return { success: true };
+        return { success: true, archived: false };
     }
 };
 exports.SuppliersService = SuppliersService;

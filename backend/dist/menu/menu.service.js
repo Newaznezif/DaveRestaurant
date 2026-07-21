@@ -52,15 +52,30 @@ let MenuService = class MenuService {
     }
     async deleteCategory(orgId, id) {
         await this.getCategory(orgId, id);
+        const productCount = await this.prisma.product.count({
+            where: { categoryId: id },
+        });
+        if (productCount > 0) {
+            throw new common_1.BadRequestException(`Cannot delete category — it still contains ${productCount} product(s). Move or delete them first.`);
+        }
         await this.prisma.menuCategory.delete({ where: { id } });
         return { success: true };
     }
+    mapProduct(product) {
+        if (!product)
+            return null;
+        return {
+            ...product,
+            cost: product.costPrice,
+        };
+    }
     async getProducts(orgId, categoryId) {
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where: { organizationId: orgId, ...(categoryId && { categoryId }) },
             include: { variants: true, addonGroups: { include: { items: true } }, category: true },
             orderBy: { name: 'asc' }
         });
+        return products.map(p => this.mapProduct(p));
     }
     async getProduct(orgId, id) {
         const product = await this.prisma.product.findFirst({
@@ -69,20 +84,27 @@ let MenuService = class MenuService {
         });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        return product;
+        return this.mapProduct(product);
     }
     async createProduct(orgId, dto) {
         const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now();
-        return this.prisma.product.create({
-            data: { ...dto, organizationId: orgId, slug },
+        const { cost, ...rest } = dto;
+        const product = await this.prisma.product.create({
+            data: { ...rest, costPrice: cost, organizationId: orgId, slug },
         });
+        return this.mapProduct(product);
     }
     async updateProduct(orgId, id, dto) {
         await this.getProduct(orgId, id);
-        return this.prisma.product.update({
+        const { cost, ...rest } = dto;
+        const product = await this.prisma.product.update({
             where: { id },
-            data: dto,
+            data: {
+                ...rest,
+                ...(cost !== undefined && { costPrice: cost }),
+            },
         });
+        return this.mapProduct(product);
     }
     async deleteProduct(orgId, id) {
         await this.getProduct(orgId, id);

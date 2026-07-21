@@ -77,12 +77,12 @@ export declare class OrganizationService {
             id: string;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             updatedAt: Date;
-            planId: string;
             status: import(".prisma/client").$Enums.SubscriptionStatus;
+            cancelledAt: Date | null;
+            planId: string;
             trialEndsAt: Date | null;
             currentPeriodStart: Date;
             currentPeriodEnd: Date;
-            cancelledAt: Date | null;
             paymentMethodId: string | null;
             autoRenew: boolean;
         } | null;

@@ -26,8 +26,8 @@ export declare class AnalyticsService {
             } | null;
             createdAt: Date;
             id: string;
-            status: import(".prisma/client").$Enums.OrderStatus;
             orderNumber: string;
+            status: import(".prisma/client").$Enums.OrderStatus;
             totalAmount: number;
         }[];
         topProducts: (import(".prisma/client").Prisma.PickEnumerable<import(".prisma/client").Prisma.OrderItemGroupByOutputType, "productId"[]> & {

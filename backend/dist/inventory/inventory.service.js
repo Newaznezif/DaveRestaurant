@@ -13,6 +13,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
+const STOCK_IN_TYPES = [
+    client_1.StockMovementType.PURCHASE,
+    client_1.StockMovementType.TRANSFER_IN,
+    client_1.StockMovementType.RETURN,
+];
+const STOCK_OUT_TYPES = [
+    client_1.StockMovementType.SALE,
+    client_1.StockMovementType.TRANSFER_OUT,
+    client_1.StockMovementType.WASTE,
+    client_1.StockMovementType.EXPIRY,
+];
 let InventoryService = InventoryService_1 = class InventoryService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -23,6 +35,10 @@ let InventoryService = InventoryService_1 = class InventoryService {
             where: {
                 organizationId,
                 ...(branchId ? { branchId } : {}),
+                isActive: true,
+            },
+            include: {
+                branch: { select: { id: true, name: true } },
             },
             orderBy: { name: 'asc' },
         });
@@ -30,6 +46,13 @@ let InventoryService = InventoryService_1 = class InventoryService {
     async findOne(orgId, id) {
         const item = await this.prisma.inventoryItem.findFirst({
             where: { id, organizationId: orgId },
+            include: {
+                branch: { select: { id: true, name: true } },
+                movements: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 20,
+                },
+            },
         });
         if (!item)
             throw new common_1.NotFoundException('Inventory item not found');
@@ -65,8 +88,63 @@ let InventoryService = InventoryService_1 = class InventoryService {
     }
     async remove(orgId, id) {
         await this.findOne(orgId, id);
-        await this.prisma.inventoryItem.delete({ where: { id } });
+        await this.prisma.inventoryItem.update({
+            where: { id },
+            data: { isActive: false },
+        });
         return { success: true };
+    }
+    async recordMovement(orgId, itemId, dto, userId) {
+        const item = await this.findOne(orgId, itemId);
+        return this.prisma.$transaction(async (tx) => {
+            const current = item.quantity;
+            let after;
+            let quantity = dto.quantity;
+            if (dto.type === client_1.StockMovementType.ADJUSTMENT) {
+                after = quantity;
+                quantity = Math.abs(after - current);
+            }
+            else if (STOCK_IN_TYPES.includes(dto.type)) {
+                after = current + quantity;
+            }
+            else if (STOCK_OUT_TYPES.includes(dto.type)) {
+                if (current < quantity) {
+                    throw new common_1.BadRequestException(`Insufficient stock. Available: ${current} ${item.unit}`);
+                }
+                after = current - quantity;
+            }
+            else {
+                throw new common_1.BadRequestException(`Unknown movement type: ${dto.type}`);
+            }
+            await tx.inventoryItem.update({
+                where: { id: itemId },
+                data: { quantity: after },
+            });
+            const movement = await tx.stockMovement.create({
+                data: {
+                    inventoryId: itemId,
+                    type: dto.type,
+                    quantity,
+                    beforeQuantity: current,
+                    afterQuantity: after,
+                    reference: dto.reference,
+                    notes: dto.notes,
+                    userId,
+                },
+            });
+            return {
+                item: { ...item, quantity: after },
+                movement,
+                isLowStock: after <= item.minQuantity,
+            };
+        });
+    }
+    async getMovements(orgId, itemId) {
+        await this.findOne(orgId, itemId);
+        return this.prisma.stockMovement.findMany({
+            where: { inventoryId: itemId },
+            orderBy: { createdAt: 'desc' },
+        });
     }
     async findLowStock(organizationId, branchId) {
         const items = await this.prisma.inventoryItem.findMany({

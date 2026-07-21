@@ -37,13 +37,12 @@ export declare class TablesController {
             updatedAt: Date;
             taxRate: number;
             notes: string | null;
-            status: import(".prisma/client").$Enums.OrderStatus;
-            cancelledAt: Date | null;
             orderNumber: string;
             customerName: string | null;
             customerEmail: string | null;
             customerPhone: string | null;
             orderType: import(".prisma/client").$Enums.OrderType;
+            status: import(".prisma/client").$Enums.OrderStatus;
             paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod | null;
             subtotal: number;
@@ -64,6 +63,7 @@ export declare class TablesController {
             readyAt: Date | null;
             servedAt: Date | null;
             completedAt: Date | null;
+            cancelledAt: Date | null;
             cancellationReason: string | null;
             source: string | null;
             posUserId: string | null;

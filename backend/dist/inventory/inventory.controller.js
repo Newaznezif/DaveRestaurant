@@ -23,6 +23,7 @@ const current_user_decorator_1 = require("../auth/decorators/current-user.decora
 const client_1 = require("@prisma/client");
 const create_inventory_item_dto_1 = require("./dto/create-inventory-item.dto");
 const update_inventory_item_dto_1 = require("./dto/update-inventory-item.dto");
+const stock_movement_dto_1 = require("./dto/stock-movement.dto");
 let InventoryController = class InventoryController {
     constructor(inventoryService) {
         this.inventoryService = inventoryService;
@@ -44,6 +45,12 @@ let InventoryController = class InventoryController {
     }
     async remove(orgId, id) {
         return this.inventoryService.remove(orgId, id);
+    }
+    async recordMovement(orgId, userId, id, dto) {
+        return this.inventoryService.recordMovement(orgId, id, dto, userId);
+    }
+    async getMovements(orgId, id) {
+        return this.inventoryService.getMovements(orgId, id);
     }
 };
 exports.InventoryController = InventoryController;
@@ -69,7 +76,7 @@ __decorate([
 ], InventoryController.prototype, "findLowStock", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get inventory item by ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get inventory item by ID (includes movement history)' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -87,7 +94,7 @@ __decorate([
 ], InventoryController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Update inventory item' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update inventory item metadata' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
@@ -97,13 +104,33 @@ __decorate([
 ], InventoryController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Delete inventory item' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Archive (soft-delete) an inventory item' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':id/movements'),
+    (0, swagger_1.ApiOperation)({ summary: 'Record a stock movement (stock-in, out, adjustment)' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('userId')),
+    __param(2, (0, common_1.Param)('id')),
+    __param(3, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, stock_movement_dto_1.StockMovementDto]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "recordMovement", null);
+__decorate([
+    (0, common_1.Get)(':id/movements'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get movement history for an inventory item' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('organizationId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "getMovements", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, swagger_1.ApiTags)('Inventory'),
     (0, swagger_1.ApiBearerAuth)(),
